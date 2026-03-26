@@ -1,0 +1,19 @@
+services:
+  dashboard:
+    build: ~/projects/dashboard
+    container_name: dashboard
+    restart: unless-stopped
+    ports:
+      - "8086:80"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  wetty:
+    image: wettyoss/wetty
+    container_name: wetty
+    restart: unless-stopped
+    command: --ssh-host host.docker.internal --ssh-port 22 --base /
+    ports:
+      - "3000:3000"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"

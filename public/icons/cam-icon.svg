@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Camera icon">
+  <rect width="64" height="64" rx="14" fill="#0f172a"/>
+  <rect x="12" y="24" width="34" height="24" rx="6" fill="#38bdf8"/>
+  <polygon points="46,30 56,26 56,46 46,42" fill="#38bdf8"/>
+  <circle cx="29" cy="36" r="8" fill="#0f172a"/>
+  <circle cx="29" cy="36" r="4" fill="#e2e8f0"/>
+</svg>

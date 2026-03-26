@@ -1,0 +1,42 @@
+.card {
+  background: rgba(5,5,22,0.85);
+  border: 1px solid rgba(0,255,255,0.2);
+  border-radius: 6px;
+  padding: 12px 16px;
+  box-shadow: 0 0 20px rgba(0,255,255,0.06);
+}
+
+.time {
+  font-size: 36px;
+  font-weight: bold;
+  color: #00ffff;
+  text-shadow: 0 0 16px rgba(0,255,255,0.7);
+  letter-spacing: 0.05em;
+  line-height: 1;
+}
+
+.colon {
+  font-size: 22px;
+  color: rgba(0,255,255,0.45);
+}
+
+.blink {
+  animation: blink 1s step-end infinite;
+}
+
+@keyframes blink {
+  50% { opacity: 0; }
+}
+
+.date {
+  margin-top: 4px;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  color: rgba(0,255,255,0.4);
+}
+
+@media (max-width: 700px) {
+  .time { font-size: 28px; }
+  .colon { font-size: 18px; }
+}
