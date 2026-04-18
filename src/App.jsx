@@ -39,6 +39,12 @@ const SITES = [
     icon: '/icons/ssh-icon.svg',
     description: 'Acceso SSH remoto',
   },
+  {
+    name: 'sshraspi.damiancb.com',
+    url: 'https://sshraspi.damiancb.com',
+    icon: '/icons/ssh-icon.svg',
+    description: 'Acceso SSH Raspberry Pi',
+  },
 ]
 
 export default function App() {
