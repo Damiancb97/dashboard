@@ -1,0 +1,76 @@
+.bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
+  padding: 13px 18px;
+  border: 1px solid var(--border);
+  border-radius: 13px;
+  background: linear-gradient(180deg, #13161d, #0f1217);
+  margin-bottom: 6px;
+}
+
+.brand { display: flex; align-items: center; gap: 13px; }
+
+.logo {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  border: 1px solid #2a303c;
+  background: #0d1014;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent);
+}
+
+.brandText { display: flex; flex-direction: column; gap: 3px; }
+.name { font-weight: 700; font-size: 15px; letter-spacing: 0.16em; }
+.sub { font-size: 11px; color: var(--muted-2); letter-spacing: 0.03em; }
+
+.right { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+
+.pill {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 6px 12px;
+  background: #0d1014;
+  letter-spacing: 0.04em;
+  color: #9aa3af;
+}
+
+.dot { width: 6px; height: 6px; border-radius: 50%; }
+
+.live .dot {
+  background: var(--accent);
+  box-shadow: 0 0 8px var(--accent);
+  animation: pulse 1.6s infinite;
+}
+.down .dot { background: var(--red); box-shadow: 0 0 8px var(--red); }
+
+.pillMono {
+  font-size: 11px;
+  color: var(--muted-2);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 6px 12px;
+  background: #0d1014;
+  font-family: var(--mono);
+}
+
+.clock { text-align: right; }
+
+.time {
+  font-family: var(--mono);
+  font-weight: 600;
+  font-size: 26px;
+  line-height: 1;
+  letter-spacing: 0.01em;
+}
+.secs { color: var(--faint); font-size: 15px; }
+.date { font-size: 11px; color: var(--muted-2); margin-top: 5px; text-transform: lowercase; }

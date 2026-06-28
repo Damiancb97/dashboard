@@ -1,0 +1,25 @@
+.card {
+  border: 1px solid var(--border);
+  border-radius: 13px;
+  background: var(--card);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 13px;
+  min-height: 206px;
+}
+
+.head { display: flex; align-items: center; justify-content: space-between; }
+.titleWrap { display: flex; align-items: center; gap: 9px; }
+.tick { width: 3px; height: 12px; border-radius: 2px; background: var(--gold); }
+.title { font-size: 11px; font-weight: 600; letter-spacing: 0.11em; color: var(--text-dim); }
+.iface { font-size: 9.5px; color: var(--muted); font-family: var(--mono); }
+
+.metrics { display: flex; gap: 18px; }
+.label { font-size: 10px; color: var(--muted); letter-spacing: 0.04em; }
+.value { font-family: var(--mono); font-weight: 600; font-size: 24px; line-height: 1.2; }
+.down { color: var(--green-bright); }
+.up { color: #6aa3ff; }
+.unit { font-size: 12px; color: var(--faint); }
+
+.totals { font-size: 10px; color: var(--faint); letter-spacing: 0.03em; }

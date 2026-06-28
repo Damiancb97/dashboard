@@ -1,53 +1,94 @@
-import { useGlances } from '../hooks/useGlances'
+import { useState } from 'react'
+import { barColor, fmtMB } from '../lib/format'
 import s from './Containers.module.css'
 
-function fmtMB(bytes) {
-  if (!bytes) return '—'
-  return bytes > 1073741824
-    ? (bytes / 1073741824).toFixed(1) + ' GB'
-    : (bytes / 1048576).toFixed(0) + ' MB'
+function isRunning(c) {
+  const st = (c.Status ?? c.status ?? '').toLowerCase()
+  return st.includes('up') || st === 'running'
 }
 
-function statusClass(status) {
-  const st = (status ?? '').toLowerCase()
-  if (st.includes('up') || st === 'running') return s.running
-  if (st.includes('paus')) return s.paused
-  return s.stopped
-}
+const FILTERS = [
+  { key: 'all', label: 'todos' },
+  { key: 'running', label: 'activos' },
+  { key: 'exited', label: 'detenidos' },
+]
 
-export default function Containers() {
-  const { containers } = useGlances()
+export default function Containers({ containers }) {
+  const [search, setSearch] = useState('')
+  const [filter, setFilter] = useState('all')
+
+  const all = containers ?? []
+  const running = all.filter(isRunning).length
+  const ramSum = all.reduce((a, c) => a + (c.memory_usage ?? 0), 0)
+
+  const list = all
+    .filter(c => filter === 'all' || (filter === 'running' ? isRunning(c) : !isRunning(c)))
+    .filter(c => c.name.toLowerCase().includes(search.toLowerCase()))
 
   return (
     <div className={s.card}>
-      <div className={s.label}>Contenedores Docker <span className={s.count}>{containers.length}</span></div>
-      <div className={s.tableWrapper}>
-      <table className={s.table}>
-        <thead>
-          <tr>
-            <th>Nombre</th>
-            <th>Estado</th>
-            <th>CPU</th>
-            <th>RAM</th>
-          </tr>
-        </thead>
-        <tbody>
-          {containers.length === 0 && (
-            <tr><td colSpan={4} className={s.empty}>Cargando...</td></tr>
-          )}
-          {containers.map(c => (
-            <tr key={c.name}>
-              <td>
-                <span className={`${s.dot} ${statusClass(c.status)}`} />
-                {c.name}
-              </td>
-              <td className={s.status}>{c.status ?? '—'}</td>
-              <td>{typeof c.cpu_percent === 'number' ? c.cpu_percent.toFixed(1) + '%' : '—'}</td>
-              <td>{fmtMB(c.memory_usage)}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      <div className={s.bar}>
+        <div className={s.counts}>
+          <span className={s.total}>{all.length}</span>
+          <span className={s.dim}>contenedores</span>
+          <span className={s.divider} />
+          <span className={s.summary}>
+            <span className={s.run}>{running}</span> activos · <span className={s.exit}>{all.length - running}</span> detenidos · <span className={s.ram}>{(ramSum / 1073741824).toFixed(1)} GB</span> RAM
+          </span>
+        </div>
+        <div className={s.controls}>
+          <input
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            placeholder="buscar contenedor…"
+            className={s.search}
+          />
+          <div className={s.filters}>
+            {FILTERS.map(f => (
+              <button
+                key={f.key}
+                onClick={() => setFilter(f.key)}
+                className={`${s.filterBtn} ${filter === f.key ? s.active : ''}`}
+              >
+                {f.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <div className={s.scroll}>
+        <div className={s.inner}>
+          <div className={s.headerRow}>
+            <span>NOMBRE</span><span>ESTADO</span><span>CPU</span><span className={s.right}>RAM</span>
+          </div>
+          {list.length === 0 && <div className={s.empty}>Sin resultados</div>}
+          {list.map(c => {
+            const run = isRunning(c)
+            const cpu = typeof c.cpu_percent === 'number' ? c.cpu_percent : 0
+            const cpuW = cpu <= 0 ? 0 : Math.max(3, Math.min(100, cpu * 3))
+            return (
+              <div key={c.name} className={s.row}>
+                <div className={s.nameCell}>
+                  <span className={`${s.dot} ${run ? s.dotRun : s.dotStop}`} />
+                  <span className={s.name}>{c.name}</span>
+                </div>
+                <div>
+                  <span className={`${s.status} ${run ? s.stRun : s.stExit}`}>
+                    {run ? 'running' : 'exited'}
+                  </span>
+                </div>
+                <div className={s.cpuCell}>
+                  <div className={s.track}>
+                    <div className={s.fill} style={{ width: `${cpuW}%`, background: barColor(cpu * 2.6) }} />
+                  </div>
+                  <span className={s.cpuTxt}>{cpu.toFixed(1)}%</span>
+                </div>
+                <div className={s.ramCell}>{c.memory_usage ? fmtMB(c.memory_usage) : '—'}</div>
+              </div>
+            )
+          })}
+        </div>
       </div>
     </div>
   )

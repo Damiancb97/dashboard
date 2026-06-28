@@ -3,10 +3,11 @@ services:
     build: ~/projects/dashboard
     container_name: dashboard
     restart: unless-stopped
-    ports:
-      - "8086:80"
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
+    # Host networking so nginx can reach the host-networked Glances instance
+    # on loopback (127.0.0.1:61208) without crossing the host firewall.
+    # nginx listens on :8086 directly (see nginx.conf); raspi/gpu sidecars
+    # remain reachable via the host's loopback / LAN addresses.
+    network_mode: host
 
   wetty:
     image: wettyoss/wetty

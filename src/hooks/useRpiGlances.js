@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 
 const BASE = '/rpi-glances/api/4'
+const HIST_LEN = 48
 
 async function get(path) {
   const r = await fetch(`${BASE}/${path}`)
@@ -17,17 +18,29 @@ async function tryGet(path) {
 }
 
 export function useRpiGlances() {
-  const [data, setData] = useState({ cpu: null, mem: null, sensors: null, online: false })
+  const [data, setData] = useState({
+    cpu: null, mem: null, sensors: null, uptime: null, online: false,
+    history: { rpiCpu: [] },
+  })
+  const hist = useRef({ rpiCpu: [] })
 
   useEffect(() => {
     async function poll() {
       try {
-        const [cpu, mem, sensors] = await Promise.all([
+        const [cpu, mem, sensors, uptime] = await Promise.all([
           get('cpu'),
           get('mem'),
           tryGet('sensors'),
+          tryGet('uptime'),
         ])
-        setData({ cpu, mem, sensors, online: true })
+        const arr = hist.current.rpiCpu
+        arr.push(cpu?.total ?? 0)
+        if (arr.length > HIST_LEN) arr.shift()
+
+        setData({
+          cpu, mem, sensors, uptime, online: true,
+          history: { rpiCpu: [...arr] },
+        })
       } catch {
         setData(prev => ({ ...prev, online: false }))
       }

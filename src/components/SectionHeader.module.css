@@ -1,0 +1,25 @@
+.row {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  margin: 24px 2px 13px;
+}
+
+.tick {
+  width: 3px;
+  height: 13px;
+  border-radius: 2px;
+}
+
+.title {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  color: #8b939f;
+}
+
+.rule {
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, var(--border), transparent);
+}
