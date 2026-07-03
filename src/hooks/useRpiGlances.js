@@ -23,9 +23,14 @@ export function useRpiGlances() {
     history: { rpiCpu: [] },
   })
   const hist = useRef({ rpiCpu: [] })
+  const busy = useRef(false)
 
   useEffect(() => {
     async function poll() {
+      // Skip if the previous poll is still in flight — a powered-off Pi must
+      // not let 3s-interval ticks stack up while requests are pending.
+      if (busy.current) return
+      busy.current = true
       try {
         const [cpu, mem, sensors, uptime] = await Promise.all([
           get('cpu'),
@@ -43,6 +48,8 @@ export function useRpiGlances() {
         })
       } catch {
         setData(prev => ({ ...prev, online: false }))
+      } finally {
+        busy.current = false
       }
     }
     poll()

@@ -23,7 +23,7 @@ export default function Sparkline({ data, color, a, b, colorA, colorB, style }) 
     } else if (data) {
       drawSingle(ctx, w, h, data, color)
     }
-  })
+  }, [data, a, b, color, colorA, colorB])
 
   return <canvas ref={ref} style={style} />
 }

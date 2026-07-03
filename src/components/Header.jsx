@@ -29,7 +29,7 @@ export default function Header({ online }) {
         </div>
         <div className={s.brandText}>
           <div className={s.name}>DAMIANCB</div>
-          <div className={s.sub}>panel del servidor · acceso LAN</div>
+          <div className={s.sub}>panel del servidor</div>
         </div>
       </div>
 
@@ -38,7 +38,7 @@ export default function Header({ online }) {
           <span className={s.dot} />
           {online ? 'EN VIVO' : 'SIN CONEXIÓN'}
         </div>
-        <div className={s.pillMono}>LAN 192.168.1.0/24</div>
+        <div className={s.pillMono}>damiancb.com</div>
         <div className={s.clock}>
           <div className={s.time}>{hm}<span className={s.secs}>:{ss}</span></div>
           <div className={s.date}>{date} · A Coruña</div>

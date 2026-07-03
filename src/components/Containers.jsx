@@ -68,7 +68,7 @@ export default function Containers({ containers }) {
             const cpu = typeof c.cpu_percent === 'number' ? c.cpu_percent : 0
             const cpuW = cpu <= 0 ? 0 : Math.max(3, Math.min(100, cpu * 3))
             return (
-              <div key={c.name} className={s.row}>
+              <div key={c.Id ?? c.name} className={s.row}>
                 <div className={s.nameCell}>
                   <span className={`${s.dot} ${run ? s.dotRun : s.dotStop}`} />
                   <span className={s.name}>{c.name}</span>

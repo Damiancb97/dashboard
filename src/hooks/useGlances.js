@@ -79,21 +79,35 @@ function cleanDisks(fs) {
   })
 }
 
-// Top processes by CPU, trimmed to the fields the panel needs.
-function topProcs(processlist, limit = 6) {
-  if (!Array.isArray(processlist)) return []
-  return [...processlist]
-    .sort((a, b) => (b.cpu_percent ?? 0) - (a.cpu_percent ?? 0))
-    .slice(0, limit)
-    .map(p => ({
-      pid: p.pid,
-      cmd: Array.isArray(p.cmdline) && p.cmdline.length
-        ? p.cmdline.join(' ')
-        : p.name,
-      user: p.username ?? '—',
-      cpu: p.cpu_percent ?? 0,
-      memMB: Array.isArray(p.memory_info) ? Math.round(p.memory_info[0] / 1048576) : null,
-    }))
+// Top processes by CPU. The dashboard is public, so we deliberately avoid the
+// full /processlist object (and the nginx proxy blocks it): command lines and
+// usernames can leak secrets. The Glances API only returns one field per
+// request, so we fetch the safe fields individually and zip them by index —
+// the arrays come from the same snapshot, so they line up. A process churning
+// between the parallel requests can only mislabel a row cosmetically; Math.min
+// guards against index errors.
+async function fetchProcs(limit = 6) {
+  const [pid, name, cpu, mem] = await Promise.all([
+    tryGet('processlist/pid'),
+    tryGet('processlist/name'),
+    tryGet('processlist/cpu_percent'),
+    tryGet('processlist/memory_info'),
+  ])
+  const pids = pid?.pid ?? []
+  const names = name?.name ?? []
+  const cpus = cpu?.cpu_percent ?? []
+  const mems = mem?.memory_info ?? []
+  const n = Math.min(pids.length, names.length, cpus.length, mems.length)
+  const rows = []
+  for (let i = 0; i < n; i++) {
+    rows.push({
+      pid: pids[i],
+      cmd: names[i],
+      cpu: cpus[i] ?? 0,
+      memMB: Array.isArray(mems[i]) ? Math.round(mems[i][0] / 1048576) : null,
+    })
+  }
+  return rows.sort((a, b) => b.cpu - a.cpu).slice(0, limit)
 }
 
 const EMPTY_HIST = { serverCpu: [], gpu: [], netDown: [], netUp: [] }
@@ -105,6 +119,7 @@ export function useGlances() {
     history: EMPTY_HIST,
   })
   const hist = useRef({ serverCpu: [], gpu: [], netDown: [], netUp: [] })
+  const busy = useRef(false)
 
   useEffect(() => {
     function push(key, value) {
@@ -114,8 +129,12 @@ export function useGlances() {
     }
 
     async function poll() {
+      // Skip if the previous poll is still in flight (a slow/hung upstream
+      // must not let 3s-interval ticks stack up).
+      if (busy.current) return
+      busy.current = true
       try {
-        const [cpu, mem, containers, sensors, gpu, network, fs, processlist, uptime] =
+        const [cpu, mem, containers, sensors, gpu, network, fs, procs, uptime] =
           await Promise.all([
             get('cpu'),
             get('mem'),
@@ -124,7 +143,7 @@ export function useGlances() {
             fetchGpu(),
             tryGet('network'),
             tryGet('fs'),
-            tryGet('processlist'),
+            fetchProcs(),
             tryGet('uptime'),
           ])
 
@@ -143,7 +162,7 @@ export function useGlances() {
           gpu,
           net,
           disks: cleanDisks(fs),
-          procs: topProcs(processlist),
+          procs,
           uptime,
           online: true,
           history: {
@@ -156,6 +175,8 @@ export function useGlances() {
       } catch (e) {
         console.error('Glances error:', e)
         setData(prev => ({ ...prev, online: false }))
+      } finally {
+        busy.current = false
       }
     }
     poll()

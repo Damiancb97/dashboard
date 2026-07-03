@@ -26,6 +26,14 @@ export function fmtSizeGB(gb) {
   return Math.round(gb) + ' GB'
 }
 
+// "used / total GB" pair, e.g. (7.4e9, 16e9) → "6.9 / 14.9 GB". Used for the
+// memory/VRAM bars where both values are always shown in GB.
+export function fmtGBPair(used, total) {
+  if (used == null || total == null) return '—'
+  const gb = b => (b / 1073741824).toFixed(1)
+  return `${gb(used)} / ${gb(total)} GB`
+}
+
 // Bytes → "182 MB" / "1.4 GB" (for RAM-sized values).
 export function fmtMB(bytes) {
   if (bytes == null) return '—'

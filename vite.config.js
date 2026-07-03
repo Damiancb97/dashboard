@@ -14,6 +14,10 @@ export default defineConfig({
         target: 'http://localhost:61211',
         rewrite: path => path.replace(/^\/gpu-stats/, ''),
       },
+      '/rpi-glances': {
+        target: 'http://192.168.1.145:61208',
+        rewrite: path => path.replace(/^\/rpi-glances/, ''),
+      },
     },
   },
 })

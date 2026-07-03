@@ -2,7 +2,7 @@ import './index.css'
 import { useGlances } from './hooks/useGlances'
 import { useRpiGlances } from './hooks/useRpiGlances'
 import {
-  barColor, tempColor, fmtUptime, getCpuTemp, getRpiTemp,
+  barColor, tempColor, fmtUptime, getCpuTemp, getRpiTemp, fmtGBPair,
 } from './lib/format'
 import Header from './components/Header'
 import SectionHeader from './components/SectionHeader'
@@ -38,6 +38,7 @@ const PUBLIC_SVC = [
   { mono: '>_', name: 'sshserver.damiancb', sub: 'Acceso SSH remoto', tag: 'ssh', url: 'https://sshserver.damiancb.com', bg: '#13351f', fg: '#74e08f' },
   { mono: '>_', name: 'sshraspi.damiancb', sub: 'SSH Raspberry Pi', tag: 'ssh', url: 'https://sshraspi.damiancb.com', bg: '#13351f', fg: '#74e08f' },
   { mono: '⬡', name: 'raspberry.damiancb', sub: 'Portainer Raspberry', tag: 'portainer', url: 'https://raspberry.damiancb.com', bg: '#0f3147', fg: '#5cc6ff' },
+  { mono: 'SP', name: 'spamurai.damiancb', sub: 'Bot de publicaciones imagen/texto', tag: 'spamurai', url: 'https://spamurai.damiancb.com', bg: '#3a1430', fg: '#ff7ad9' },
 ]
 
 // Privados — only reachable on the LAN; URL host adapts to how you connect.
@@ -50,11 +51,6 @@ const PRIVATE_SVC = [
   tag: `:${svc.port}`,
   url: `http://${LAN_HOST}:${svc.port}`,
 }))
-
-const gbText = (used, total) =>
-  used != null && total != null
-    ? `${(used / 1073741824).toFixed(1)} / ${(total / 1073741824).toFixed(1)} GB`
-    : '—'
 
 export default function App() {
   const g = useGlances()
@@ -83,7 +79,7 @@ export default function App() {
             title="SERVIDOR" tickColor="#3fb37f" online={g.online}
             metricLabel="CPU" metricValue={cpuPct}
             spark={g.history.serverCpu} sparkColor="#3fb37f"
-            barLabel="MEMORIA" barText={gbText(g.mem?.used, g.mem?.total)}
+            barLabel="MEMORIA" barText={fmtGBPair(g.mem?.used, g.mem?.total)}
             barPct={memPct} barColor={barColor(memPct)}
             temp={srvTemp ? Math.round(srvTemp.value) : null}
             tempColor={srvTemp ? tempColor(srvTemp.value) : undefined}
@@ -93,7 +89,7 @@ export default function App() {
             title="GPU" tickColor="#4f9dff" online={!!gpu}
             metricLabel="CARGA" metricValue={gpuLoad}
             spark={g.history.gpu} sparkColor="#4f9dff"
-            barLabel="VRAM" barText={gpu ? gbText(gpu.memory_used * 1048576, gpu.memory_total * 1048576) : '—'}
+            barLabel="VRAM" barText={gpu ? fmtGBPair(gpu.memory_used * 1048576, gpu.memory_total * 1048576) : '—'}
             barPct={vramPct} barColor={barColor(vramPct)}
             temp={gpu?.temperature != null ? Math.round(gpu.temperature) : null}
             tempColor={gpu?.temperature != null ? tempColor(gpu.temperature) : undefined}
@@ -103,7 +99,7 @@ export default function App() {
             title="RASPBERRY PI" tickColor="#2dd4bf" online={rpi.online}
             metricLabel="CPU" metricValue={rpiCpu}
             spark={rpi.history.rpiCpu} sparkColor="#2dd4bf"
-            barLabel="MEMORIA" barText={gbText(rpi.mem?.used, rpi.mem?.total)}
+            barLabel="MEMORIA" barText={fmtGBPair(rpi.mem?.used, rpi.mem?.total)}
             barPct={rpiMemPct} barColor={barColor(rpiMemPct)}
             temp={rpiTemp ? Math.round(rpiTemp.value) : null}
             tempColor={rpiTemp ? tempColor(rpiTemp.value) : undefined}

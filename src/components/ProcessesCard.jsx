@@ -25,7 +25,6 @@ export default function ProcessesCard({ procs }) {
             <span className={s.pid}>{p.pid}</span>
             <div className={s.cmdWrap}>
               <div className={s.cmd}>{p.cmd}</div>
-              <div className={s.user}>{p.user}</div>
             </div>
             <div className={s.cpuCell}>
               <div className={s.track}>

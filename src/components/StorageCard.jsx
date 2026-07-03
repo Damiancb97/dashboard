@@ -20,10 +20,10 @@ export default function StorageCard({ disks }) {
 
       <div className={s.list}>
         {list.length === 0 && <div className={s.empty}>Cargando…</div>}
-        {list.map(d => {
+        {list.map((d, i) => {
           const color = barColor(d.percent)
           return (
-            <div key={d.label}>
+            <div key={`${d.label}-${i}`}>
               <div className={s.diskHead}>
                 <div className={s.diskName}>
                   <span className={s.label}>{d.label}</span>

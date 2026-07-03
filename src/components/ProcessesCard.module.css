@@ -32,7 +32,6 @@
 .pid { font-family: var(--mono); color: var(--muted); }
 .cmdWrap { min-width: 0; }
 .cmd { font-family: var(--mono); color: #cdd5df; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.user { font-size: 10px; color: var(--faint); }
 
 .cpuCell { display: flex; align-items: center; gap: 8px; }
 .track { flex: 1; height: 4px; border-radius: 2px; background: #1c2029; overflow: hidden; }
