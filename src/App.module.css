@@ -20,6 +20,20 @@
   gap: 16px;
 }
 
+.split {
+  display: grid;
+  grid-template-columns: minmax(640px, 1fr) minmax(0, 740px);
+  gap: 16px;
+  align-items: start;
+}
+
+@media (max-width: 1199px) {
+  .split {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+}
+
 @media (max-width: 640px) {
   .page { padding: 16px 14px 48px; }
 }

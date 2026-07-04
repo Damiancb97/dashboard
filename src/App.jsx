@@ -115,11 +115,16 @@ export default function App() {
           <ProcessesCard procs={g.procs} />
         </div>
 
-        <SectionHeader title="CONTENEDORES DOCKER" />
-        <Containers containers={g.containers} />
-
-        <SectionHeader title="SERVICIOS" />
-        <Services publicSvc={PUBLIC_SVC} privSvc={PRIVATE_SVC} lanIp={LAN_HOST} />
+        <div className={s.split}>
+          <div>
+            <SectionHeader title="CONTENEDORES DOCKER" />
+            <Containers containers={g.containers} />
+          </div>
+          <div>
+            <SectionHeader title="SERVICIOS" />
+            <Services publicSvc={PUBLIC_SVC} privSvc={PRIVATE_SVC} lanIp={LAN_HOST} />
+          </div>
+        </div>
       </div>
     </div>
   )
