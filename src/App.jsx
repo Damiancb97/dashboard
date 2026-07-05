@@ -47,10 +47,12 @@ const PRIVATE_SVC = [
   { mono: 'PM', port: 8765, name: 'Polymarket · Codex', sub: 'Bot de trading', bg: '#3d2c10', fg: '#f0c068' },
   { mono: 'PM', port: 8501, name: 'Polymarket · Claude', sub: 'Dashboard Streamlit', bg: '#3d2c10', fg: '#f0c068' },
   { mono: 'BI', port: 8088, name: 'Learning-Bet IA', sub: 'Modelo de apuestas', bg: '#2b1d44', fg: '#c8a4ff' },
+  // Coinly: host fijo — los redirect URIs del cliente Keycloak solo admiten esta IP.
+  { mono: '€', port: 5173, host: '192.168.1.139', name: 'Coinly', sub: 'Finanzas personales', bg: '#0f3d2c', fg: '#5fe39b' },
 ].map(svc => ({
   ...svc,
   tag: `:${svc.port}`,
-  url: `http://${LAN_HOST}:${svc.port}`,
+  url: `http://${svc.host ?? LAN_HOST}:${svc.port}`,
 }))
 
 export default function App() {
