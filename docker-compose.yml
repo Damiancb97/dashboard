@@ -18,3 +18,37 @@ services:
       - "3000:3000"
     extra_hosts:
       - "host.docker.internal:host-gateway"
+
+  zomboid-sidecar:
+    build: ~/projects/dashboard/zomboid-sidecar
+    container_name: zomboid-sidecar
+    restart: unless-stopped
+    network_mode: host
+    pid: host
+    privileged: true
+    user: "root"
+    volumes:
+      - /home/serverubuntu/Zomboid:/home/serverubuntu/Zomboid
+      - /home/serverubuntu/snap/steam:/home/serverubuntu/snap/steam
+
+  zomboid-discord-bot:
+    build: ~/projects/dashboard/zomboid-discord-bot
+    container_name: zomboid-discord-bot
+    restart: unless-stopped
+    # Opt-in: sin el perfil, un `docker compose up -d` normal no lo arranca, así no
+    # entra en bucle de reinicio mientras el .env esté sin rellenar.
+    #   docker compose --profile discord up -d --build zomboid-discord-bot
+    profiles: ["discord"]
+    # Host networking so the bot can reach the host-networked sidecar on loopback
+    # (127.0.0.1:61212) without crossing the host firewall, same reason as dashboard.
+    network_mode: host
+    env_file: .env
+    healthcheck:
+      # Freshness rather than liveness: the process can be up but its poll loop wedged,
+      # so check that the loop touched its heartbeat recently.
+      test: ["CMD", "python", "-c", "import os,sys,time; sys.exit(0 if time.time()-os.path.getmtime('/tmp/zomboid-bot-heartbeat') < 120 else 1)"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+

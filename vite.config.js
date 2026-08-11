@@ -18,6 +18,11 @@ export default defineConfig({
         target: 'http://192.168.1.145:61208',
         rewrite: path => path.replace(/^\/rpi-glances/, ''),
       },
+      '/zomboid': {
+        target: 'http://localhost:61212',
+        rewrite: path => path.replace(/^\/zomboid/, ''),
+      },
+
     },
   },
 })

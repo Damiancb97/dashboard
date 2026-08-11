@@ -1,0 +1,250 @@
+.card {
+  background: rgba(10, 15, 25, 0.75);
+  border: 1px solid rgba(75, 140, 255, 0.15);
+  border-radius: 12px;
+  padding: 18px 20px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(10px);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  color: #e0e6ed;
+}
+
+.head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.titleWrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.title {
+  font-weight: 700;
+  font-size: 0.95rem;
+  letter-spacing: 1.5px;
+  color: #88c0d0;
+  text-transform: uppercase;
+}
+
+.statusDot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  box-shadow: 0 0 10px currentColor;
+  transition: background 0.3s ease;
+}
+
+.dotOnline {
+  background: #3fb37f;
+  color: #3fb37f;
+  animation: pulse 2s infinite;
+}
+
+.dotOffline {
+  background: #ff5555;
+  color: #ff5555;
+}
+
+@keyframes pulse {
+  0% { opacity: 0.6; transform: scale(0.95); }
+  50% { opacity: 1; transform: scale(1.1); }
+  100% { opacity: 0.6; transform: scale(0.95); }
+}
+
+.statusTag {
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 4px;
+  letter-spacing: 0.5px;
+}
+
+.tagOnline {
+  background: rgba(63, 179, 127, 0.15);
+  color: #3fb37f;
+  border: 1px solid rgba(63, 179, 127, 0.3);
+}
+
+.tagOffline {
+  background: rgba(255, 85, 85, 0.15);
+  color: #ff6e6e;
+  border: 1px solid rgba(255, 85, 85, 0.3);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 12px;
+  background: rgba(0, 0, 0, 0.25);
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.statItem {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.label {
+  font-size: 0.68rem;
+  color: #718294;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.val {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #d8dee9;
+}
+
+/* Someone is actually in the world — worth spotting at a glance. */
+.valActive {
+  color: #57e3a3;
+}
+
+.subVal {
+  font-size: 0.72rem;
+  color: #8892b0;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.btn {
+  flex: 1;
+  min-width: 100px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: 1px solid transparent;
+  font-family: inherit;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+  background: rgba(255, 255, 255, 0.06);
+  color: #d8dee9;
+}
+
+.btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  filter: brightness(1.2);
+}
+
+.btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.btnStart {
+  background: rgba(63, 179, 127, 0.15);
+  color: #57e3a3;
+  border-color: rgba(63, 179, 127, 0.4);
+}
+
+.btnStop {
+  background: rgba(255, 85, 85, 0.15);
+  color: #ff7b7b;
+  border-color: rgba(255, 85, 85, 0.4);
+}
+
+.btnRestart {
+  background: rgba(235, 203, 139, 0.15);
+  color: #ebcb8b;
+  border-color: rgba(235, 203, 139, 0.4);
+}
+
+.btnReset {
+  background: rgba(180, 142, 173, 0.15);
+  color: #b48ead;
+  border-color: rgba(180, 142, 173, 0.4);
+}
+
+.btnConsole {
+  background: rgba(136, 192, 208, 0.15);
+  color: #88c0d0;
+  border-color: rgba(136, 192, 208, 0.4);
+}
+
+.errorBanner {
+  background: rgba(255, 85, 85, 0.15);
+  border: 1px solid rgba(255, 85, 85, 0.4);
+  color: #ff6e6e;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 0.78rem;
+}
+
+.logBox {
+  background: #090d16;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 12px;
+  max-height: 240px;
+  overflow-y: auto;
+  font-size: 0.72rem;
+  line-height: 1.4;
+  color: #a3be8c;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+.modalOverlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal {
+  background: #111827;
+  border: 1px solid rgba(255, 85, 85, 0.4);
+  border-radius: 10px;
+  padding: 24px;
+  max-width: 420px;
+  width: 90%;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+}
+
+.modalTitle {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #ff6e6e;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.modalText {
+  font-size: 0.82rem;
+  color: #d8dee9;
+  line-height: 1.5;
+}
+
+.modalActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}

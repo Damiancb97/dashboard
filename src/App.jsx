@@ -12,7 +12,9 @@ import StorageCard from './components/StorageCard'
 import ProcessesCard from './components/ProcessesCard'
 import Containers from './components/Containers'
 import Services from './components/Services'
+import ZomboidCard from './components/ZomboidCard'
 import s from './App.module.css'
+
 
 // MagicDNS host used when the dashboard is opened from a public domain, where
 // raw LAN ports aren't exposed but the Tailscale host is reachable.
@@ -117,6 +119,9 @@ export default function App() {
           <ProcessesCard procs={g.procs} />
         </div>
 
+        <SectionHeader title="PROJECT ZOMBOID DEDICATED SERVER" />
+        <ZomboidCard />
+
         <div className={s.split}>
           <div>
             <SectionHeader title="CONTENEDORES DOCKER" />
@@ -130,4 +135,5 @@ export default function App() {
       </div>
     </div>
   )
+
 }
