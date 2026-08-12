@@ -329,6 +329,10 @@ class ZomboidBot(discord.Client):
         self.panel_message = None
         self.previous_names = None
         self.warned = False
+        # on_ready and the poll loop both reach ensure_panel right after login. Without
+        # this, both get past the None check while awaiting channel.history and each
+        # posts its own panel.
+        self.panel_lock = asyncio.Lock()
 
     async def setup_hook(self):
         # Registering the view here is what revives the buttons of a panel posted by a
@@ -361,19 +365,20 @@ class ZomboidBot(discord.Client):
 
     async def ensure_panel(self):
         """Reuse the existing panel message instead of spamming a new one per restart."""
-        if self.panel_message is not None:
+        async with self.panel_lock:
+            if self.panel_message is not None:
+                return self.panel_message
+            channel = await self.channel()
+            async for message in channel.history(limit=30):
+                if message.author.id == self.user.id and message.components:
+                    self.panel_message = message
+                    LOGGER.info("Reusing existing panel message %s", message.id)
+                    return message
+            self.panel_message = await channel.send(
+                embed=build_embed(await self.safe_status()), view=ControlPanel(self)
+            )
+            LOGGER.info("Posted new panel message %s", self.panel_message.id)
             return self.panel_message
-        channel = await self.channel()
-        async for message in channel.history(limit=30):
-            if message.author.id == self.user.id and message.components:
-                self.panel_message = message
-                LOGGER.info("Reusing existing panel message %s", message.id)
-                return message
-        self.panel_message = await channel.send(
-            embed=build_embed(await self.safe_status()), view=ControlPanel(self)
-        )
-        LOGGER.info("Posted new panel message %s", self.panel_message.id)
-        return self.panel_message
 
     async def refresh_panel(self, status=None):
         try:
