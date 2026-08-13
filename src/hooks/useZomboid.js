@@ -72,19 +72,32 @@ export function useZomboid() {
     }
   }, [showLogs, fetchLogs])
 
-  const triggerAction = async (endpoint, actionName) => {
+  // Returns { ok, message } so a caller with its own inline error UI can react to a
+  // failure directly. `silent` keeps that failure out of the card-wide error banner,
+  // which would otherwise show the same text twice.
+  const triggerAction = async (endpoint, actionName, { body, silent } = {}) => {
     setActionPending(actionName)
     setErrorMsg(null)
+    const fail = message => {
+      if (!silent) setErrorMsg(message)
+      return { ok: false, message }
+    }
     try {
-      const res = await fetch(`${BASE}/${endpoint}`, { method: 'POST' })
+      const res = await fetch(`${BASE}/${endpoint}`, {
+        method: 'POST',
+        ...(body && {
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body),
+        }),
+      })
       const json = await res.json()
       if (!res.ok || !json.success) {
-        setErrorMsg(json.message || 'Error al ejecutar la acción')
-      } else {
-        await pollStatus()
+        return fail(json.message || 'Error al ejecutar la acción')
       }
+      await pollStatus()
+      return { ok: true, message: json.message ?? '' }
     } catch (e) {
-      setErrorMsg(`Falló la conexión con el servidor: ${e.message}`)
+      return fail(`Falló la conexión con el servidor: ${e.message}`)
     } finally {
       setActionPending(null)
     }
@@ -100,7 +113,8 @@ export function useZomboid() {
     startServer: () => triggerAction('start', 'iniciando'),
     stopServer: () => triggerAction('stop', 'apagando'),
     restartServer: () => triggerAction('restart', 'reiniciando'),
-    resetWorld: () => triggerAction('reset', 'reseteando'),
+    resetWorld: password =>
+      triggerAction('reset', 'reseteando', { body: { password }, silent: true }),
     fetchLogs,
   }
 }

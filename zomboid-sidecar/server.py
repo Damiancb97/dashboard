@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import glob
+import hmac
 import http.server
 import json
 import os
@@ -36,6 +37,25 @@ KEEPALIVE_TIMEOUT_SEC = _env_int("ZOMBOID_KEEPALIVE_TIMEOUT_SEC", 3600)
 # could shut itself down moments after being started.
 IDLE_GRACE_SEC = _env_int("ZOMBOID_IDLE_GRACE_SEC", 180)
 IDLE_CHECK_INTERVAL = 30.0
+
+# /reset wipes the save and the account DB, and the dashboard that calls it is public
+# and unauthenticated — so this endpoint, alone among them, needs a shared secret.
+# Empty means the endpoint is disabled outright: no password configured must never
+# read as "no password required".
+RESET_PASSWORD = os.environ.get("ZOMBOID_RESET_PASSWORD", "")
+RESET_MAX_ATTEMPTS = _env_int("ZOMBOID_RESET_MAX_ATTEMPTS", 5)
+RESET_LOCKOUT_SEC = _env_int("ZOMBOID_RESET_LOCKOUT_SEC", 900)
+# Largest request body we'll read. The only body we accept is {"password": "..."}.
+MAX_BODY_BYTES = 4096
+
+# Lockout is global rather than per-IP on purpose: nginx proxies without
+# X-Forwarded-For, so every request arriving through the dashboard looks like
+# 127.0.0.1 and a per-IP counter would protect nothing. The cost is that anyone can
+# keep /reset locked for RESET_LOCKOUT_SEC by failing on purpose — acceptable, since
+# wiping the world is never urgent and the script can still be run by hand.
+_reset_lock = threading.Lock()
+_reset_failures = 0
+_reset_locked_until = 0.0
 
 # Zomboid's own shutdown takes 9-12s on this world (measured: "Shutdown handling
 # started" -> "finished"), so the stop timeout has to sit well clear of that or the
@@ -484,6 +504,53 @@ def read_last_logs(lines_count=60):
     except Exception as e:
         return f"Error leyendo logs: {str(e)}"
 
+def check_reset_password(supplied):
+    """Authorise a world wipe. Returns (ok, http_status, message).
+
+    Fails closed: with no ZOMBOID_RESET_PASSWORD set the endpoint is unavailable
+    rather than open. A wrong password costs a second of wall time, which is
+    harmless here (the server is threaded) but makes brute force pointless.
+    """
+    global _reset_failures, _reset_locked_until
+
+    if not RESET_PASSWORD:
+        return False, 503, (
+            "Borrado deshabilitado: falta configurar ZOMBOID_RESET_PASSWORD "
+            "en el sidecar."
+        )
+
+    with _reset_lock:
+        remaining = _reset_locked_until - time.time()
+        if remaining > 0:
+            minutes = max(1, int(remaining // 60) + 1)
+            return False, 429, (
+                f"Demasiados intentos fallidos. Inténtalo de nuevo en {minutes} min."
+            )
+
+    if hmac.compare_digest(supplied or "", RESET_PASSWORD):
+        with _reset_lock:
+            _reset_failures = 0
+        return True, 200, ""
+
+    time.sleep(1)
+    with _reset_lock:
+        _reset_failures += 1
+        failures = _reset_failures
+        if failures >= RESET_MAX_ATTEMPTS:
+            _reset_locked_until = time.time() + RESET_LOCKOUT_SEC
+            _reset_failures = 0
+    print(
+        f"[reset] contraseña incorrecta (intento {failures}/{RESET_MAX_ATTEMPTS})",
+        flush=True,
+    )
+    if failures >= RESET_MAX_ATTEMPTS:
+        return False, 429, (
+            f"Demasiados intentos fallidos. Borrado bloqueado "
+            f"{RESET_LOCKOUT_SEC // 60} min."
+        )
+    return False, 401, "Contraseña incorrecta"
+
+
 class ZomboidHandler(http.server.BaseHTTPRequestHandler):
     def _send_json(self, data, status=200):
         body = json.dumps(data).encode("utf-8")
@@ -495,6 +562,25 @@ class ZomboidHandler(http.server.BaseHTTPRequestHandler):
         self.send_header("Content-Length", str(len(body)))
         self.end_headers()
         self.wfile.write(body)
+
+    def _read_json_body(self):
+        """Parse the request body as a JSON object, or {} if it isn't one.
+
+        Callers that don't need a body must still drain it: the socket is reused for
+        the response, so an unread body would be parsed as the next request.
+        """
+        try:
+            length = int(self.headers.get("Content-Length", "0"))
+        except ValueError:
+            return {}
+        if length <= 0:
+            return {}
+        raw = self.rfile.read(min(length, MAX_BODY_BYTES))
+        try:
+            parsed = json.loads(raw.decode("utf-8"))
+        except (ValueError, UnicodeDecodeError):
+            return {}
+        return parsed if isinstance(parsed, dict) else {}
 
     def do_OPTIONS(self):
         self.send_response(204)
@@ -543,6 +629,10 @@ class ZomboidHandler(http.server.BaseHTTPRequestHandler):
     def do_POST(self):
         url = urlparse(self.path)
         path = url.path.rstrip('/')
+
+        # Drained for every POST, not just /reset, so a body sent to any endpoint
+        # can't be left in the socket buffer.
+        body = self._read_json_body()
 
         pids = find_zomboid_pids()
 
@@ -622,12 +712,19 @@ class ZomboidHandler(http.server.BaseHTTPRequestHandler):
                 )
 
         elif path in ["/reset", "/api/reset"]:
+            # Checked before anything else: a failed attempt must not stop the server.
+            ok, status, message = check_reset_password(body.get("password"))
+            if not ok:
+                self._send_json({"success": False, "message": message}, status=status)
+                return
+
             if pids:
                 stop_zomboid_server()
 
             reset_script = os.path.join(ZOMBOID_DIR, "reset-zomboid-world.sh")
             try:
                 out = subprocess.check_output(["bash", reset_script], cwd=ZOMBOID_DIR, text=True)
+                print("[reset] mundo borrado tras contraseña correcta", flush=True)
                 self._send_json({"success": True, "message": "Mundo reseteado correctamente.", "output": out})
             except Exception as e:
                 self._send_json({"success": False, "message": f"Error en reseteo: {str(e)}"}, status=500)
@@ -650,6 +747,15 @@ def run():
             KEEPALIVE_TIMEOUT_SEC,
             IDLE_GRACE_SEC,
         )
+    )
+    print(
+        "Borrado de mundo: %s"
+        % (
+            "protegido por contraseña"
+            if RESET_PASSWORD
+            else "DESHABILITADO (falta ZOMBOID_RESET_PASSWORD)"
+        ),
+        flush=True,
     )
     server.serve_forever()
 

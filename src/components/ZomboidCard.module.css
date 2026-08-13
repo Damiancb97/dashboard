@@ -190,6 +190,60 @@
   font-size: 0.78rem;
 }
 
+.resetPanel {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px;
+  border-radius: 8px;
+  background: rgba(255, 85, 85, 0.08);
+  border: 1px solid rgba(255, 85, 85, 0.4);
+}
+
+.resetTitle {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #ff6e6e;
+  letter-spacing: 0.04em;
+}
+
+.resetText {
+  font-size: 0.78rem;
+  color: #d8dee9;
+  line-height: 1.5;
+}
+
+.resetInput {
+  background: #090d16;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  padding: 9px 12px;
+  color: #d8dee9;
+  font-family: inherit;
+  font-size: 0.8rem;
+  letter-spacing: 0.12em;
+  outline: none;
+}
+
+.resetInput:focus {
+  border-color: rgba(255, 85, 85, 0.6);
+}
+
+.resetInput:disabled {
+  opacity: 0.5;
+}
+
+.resetError {
+  font-size: 0.75rem;
+  color: #ff6e6e;
+}
+
+.resetActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
 .logBox {
   background: #090d16;
   border: 1px solid rgba(255, 255, 255, 0.1);

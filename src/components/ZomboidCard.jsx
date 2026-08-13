@@ -63,16 +63,38 @@ export default function ZomboidCard() {
     resetWorld,
   } = useZomboid()
 
-  const [confirmModal, setConfirmModal] = useState(null) // 'stop' | 'reset' | null
+  const [confirmModal, setConfirmModal] = useState(null) // 'stop' | null
+
+  // Wiping the world asks for a password instead of a plain confirmation: this
+  // dashboard is public, so the sidecar validates it server-side and we only relay
+  // its verdict here.
+  const [resetOpen, setResetOpen] = useState(false)
+  const [resetPassword, setResetPassword] = useState('')
+  const [resetError, setResetError] = useState(null)
 
   const handleStopConfirm = () => {
     stopServer()
     setConfirmModal(null)
   }
 
-  const handleResetConfirm = () => {
-    resetWorld()
-    setConfirmModal(null)
+  const closeReset = () => {
+    setResetOpen(false)
+    setResetPassword('')
+    setResetError(null)
+  }
+
+  const handleResetSubmit = async e => {
+    e.preventDefault()
+    setResetError(null)
+    const result = await resetWorld(resetPassword)
+    if (result.ok) {
+      closeReset()
+    } else {
+      // Password cleared but the panel stays open, so a typo means retyping the
+      // password rather than starting the whole confirmation over.
+      setResetPassword('')
+      setResetError(result.message)
+    }
   }
 
   return (
@@ -168,7 +190,7 @@ export default function ZomboidCard() {
 
         <button
           className={`${s.btn} ${s.btnReset}`}
-          onClick={() => setConfirmModal('reset')}
+          onClick={() => (resetOpen ? closeReset() : setResetOpen(true))}
           disabled={!!actionPending}
         >
           ⚠️ Borrar Mundo
@@ -181,6 +203,44 @@ export default function ZomboidCard() {
           💻 {showLogs ? 'Ocultar Consola' : 'Ver Consola'}
         </button>
       </div>
+
+      {resetOpen && (
+        <form className={s.resetPanel} onSubmit={handleResetSubmit}>
+          <div className={s.resetTitle}>⚠️ Borrar Mundo</div>
+          <div className={s.resetText}>
+            Se eliminarán el mundo guardado y todas las cuentas. Se creará una copia de
+            seguridad automática antes del borrado. Introduce la contraseña para confirmar.
+          </div>
+          <input
+            className={s.resetInput}
+            type="password"
+            value={resetPassword}
+            onChange={e => setResetPassword(e.target.value)}
+            placeholder="Contraseña"
+            autoComplete="current-password"
+            autoFocus
+            disabled={!!actionPending}
+          />
+          {resetError && <div className={s.resetError}>✗ {resetError}</div>}
+          <div className={s.resetActions}>
+            <button
+              type="button"
+              className={s.btn}
+              onClick={closeReset}
+              disabled={!!actionPending}
+            >
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              className={`${s.btn} ${s.btnStop}`}
+              disabled={!resetPassword || !!actionPending}
+            >
+              {actionPending === 'reseteando' ? 'Borrando...' : 'Confirmar Borrado'}
+            </button>
+          </div>
+        </form>
+      )}
 
       {showLogs && (
         <pre className={s.logBox}>
@@ -199,22 +259,6 @@ export default function ZomboidCard() {
             <div className={s.modalActions}>
               <button className={s.btn} onClick={() => setConfirmModal(null)}>Cancelar</button>
               <button className={`${s.btn} ${s.btnStop}`} onClick={handleStopConfirm}>Apagar Servidor</button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Modal de confirmación para Borrar Mundo */}
-      {confirmModal === 'reset' && (
-        <div className={s.modalOverlay}>
-          <div className={s.modal}>
-            <div className={s.modalTitle}>⚠️ Confirmar Borrado de Mundo</div>
-            <div className={s.modalText}>
-              ¿Estás seguro de que deseas eliminar el mundo guardado y reiniciar las cuentas? Se creará una copia de seguridad automática antes del borrado.
-            </div>
-            <div className={s.modalActions}>
-              <button className={s.btn} onClick={() => setConfirmModal(null)}>Cancelar</button>
-              <button className={`${s.btn} ${s.btnStop}`} onClick={handleResetConfirm}>Borrar Mundo</button>
             </div>
           </div>
         </div>

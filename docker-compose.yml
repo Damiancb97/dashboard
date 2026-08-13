@@ -27,6 +27,9 @@ services:
     pid: host
     privileged: true
     user: "root"
+    # Solo esta variable, no `env_file: .env`, para no meterle el token de Discord.
+    environment:
+      - ZOMBOID_RESET_PASSWORD=${ZOMBOID_RESET_PASSWORD}
     volumes:
       - /home/serverubuntu/Zomboid:/home/serverubuntu/Zomboid
       - /home/serverubuntu/snap/steam:/home/serverubuntu/snap/steam
