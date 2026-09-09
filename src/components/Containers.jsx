@@ -13,9 +13,42 @@ const FILTERS = [
   { key: 'exited', label: 'detenidos' },
 ]
 
+const COLS = [
+  { key: 'name', label: 'NOMBRE' },
+  { key: 'cpu_percent', label: 'CPU' },
+  { key: 'memory_usage', label: 'RAM', right: true },
+]
+
+// Dirección natural al estrenar columna: nombre alfabético, métricas de más a menos.
+const DEFAULT_DIR = { name: 'asc', cpu_percent: 'desc', memory_usage: 'desc' }
+
+function compare(a, b, { key, dir }) {
+  if (key === 'name') {
+    const r = a.name.localeCompare(b.name)
+    return dir === 'asc' ? r : -r
+  }
+  // Los detenidos no reportan métricas: al fondo siempre, suba o baje el orden.
+  const va = typeof a[key] === 'number' ? a[key] : null
+  const vb = typeof b[key] === 'number' ? b[key] : null
+  if (va === null || vb === null) {
+    if (va === vb) return a.name.localeCompare(b.name)
+    return va === null ? 1 : -1
+  }
+  // Desempate estable por nombre: muchos comparten 0.0% y saltarían en cada poll.
+  if (va === vb) return a.name.localeCompare(b.name)
+  return dir === 'asc' ? va - vb : vb - va
+}
+
 export default function Containers({ containers }) {
   const [search, setSearch] = useState('')
   const [filter, setFilter] = useState('all')
+  const [sort, setSort] = useState({ key: 'name', dir: 'asc' })
+
+  const toggleSort = key => setSort(prev =>
+    prev.key === key
+      ? { key, dir: prev.dir === 'asc' ? 'desc' : 'asc' }
+      : { key, dir: DEFAULT_DIR[key] }
+  )
 
   const all = containers ?? []
   const running = all.filter(isRunning).length
@@ -24,6 +57,19 @@ export default function Containers({ containers }) {
   const list = all
     .filter(c => filter === 'all' || (filter === 'running' ? isRunning(c) : !isRunning(c)))
     .filter(c => c.name.toLowerCase().includes(search.toLowerCase()))
+    .sort((a, b) => compare(a, b, sort))
+
+  const sortHead = col => (
+    <button
+      onClick={() => toggleSort(col.key)}
+      className={`${s.sortBtn} ${col.right ? s.right : ''} ${sort.key === col.key ? s.sortActive : ''}`}
+      aria-sort={sort.key === col.key ? (sort.dir === 'asc' ? 'ascending' : 'descending') : 'none'}
+      title={`Ordenar por ${col.label.toLowerCase()}`}
+    >
+      {col.label}
+      <span className={s.arrow}>{sort.key === col.key && sort.dir === 'asc' ? '▲' : '▼'}</span>
+    </button>
+  )
 
   return (
     <div className={s.card}>
@@ -60,7 +106,7 @@ export default function Containers({ containers }) {
       <div className={s.scroll}>
         <div className={s.inner}>
           <div className={s.headerRow}>
-            <span>NOMBRE</span><span>ESTADO</span><span>CPU</span><span className={s.right}>RAM</span>
+            {sortHead(COLS[0])}<span>ESTADO</span>{sortHead(COLS[1])}{sortHead(COLS[2])}
           </div>
           {list.length === 0 && <div className={s.empty}>Sin resultados</div>}
           {list.map(c => {
