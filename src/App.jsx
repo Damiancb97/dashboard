@@ -48,9 +48,9 @@ const PUBLIC_SVC = [
 // Privados — only reachable on the LAN; URL host adapts to how you connect.
 const PRIVATE_SVC = [
   { mono: '☁', port: 8090, name: 'Cloud personal', sub: 'Archivos · fotos · vídeos', bg: '#143a36', fg: '#5fe3cf' },
-  { mono: 'PM', port: 8765, name: 'Polymarket · Codex', sub: 'Bot de trading', bg: '#3d2c10', fg: '#f0c068' },
+  { mono: 'PM', port: 8765, name: 'Polymarket · Codex', sub: 'Bot de trading', bg: '#3d2c10', fg: '#f0c068', stopped: true },
   { mono: 'PM', port: 8501, name: 'Polymarket · Claude', sub: 'Dashboard Streamlit', bg: '#3d2c10', fg: '#f0c068' },
-  { mono: 'BI', port: 8088, name: 'Learning-Bet IA', sub: 'Modelo de apuestas', bg: '#2b1d44', fg: '#c8a4ff' },
+  { mono: 'BI', port: 8088, name: 'Learning-Bet IA', sub: 'Modelo de apuestas', bg: '#2b1d44', fg: '#c8a4ff', stopped: true },
   // Coinly: host fijo — los redirect URIs del cliente Keycloak solo admiten esta IP.
   { mono: '€', port: 5173, host: '192.168.1.139', name: 'Coinly', sub: 'Finanzas personales', bg: '#0f3d2c', fg: '#5fe39b' },
 ].map(svc => ({

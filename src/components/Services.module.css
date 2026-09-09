@@ -71,3 +71,13 @@
 .meta { text-align: right; flex: 0 0 auto; }
 .statusDot { width: 6px; height: 6px; border-radius: 50%; display: inline-block; }
 .host { font-family: var(--mono); font-size: 9.5px; color: var(--faint); margin-top: 4px; }
+
+.itemStopped {
+  opacity: 0.42;
+  border-color: #1e2028;
+  background: #0a0b0e;
+  cursor: default;
+  filter: grayscale(0.65);
+}
+.itemStopped:hover { border-color: #1e2028; background: #0a0b0e; }
+.hostStopped { color: #6d7480; letter-spacing: 0.09em; }
