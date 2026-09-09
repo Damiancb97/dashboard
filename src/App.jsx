@@ -37,8 +37,10 @@ const PUBLIC_SVC = [
   { mono: 'TG', name: 'timedgg.com', sub: 'World of Warcraft', tag: 'timed.gg', url: 'https://timedgg.com', bg: '#2c2150', fg: '#c4a6ff' },
   { mono: 'AC', name: 'algodonconamor.es', sub: 'Algodón con amor', tag: 'algodon.es', url: 'https://algodonconamor.es', bg: '#4a1f33', fg: '#ff9bc0' },
   { mono: '◉', name: 'cam.damiancb.com', sub: 'Cámara de seguridad', tag: 'cam', url: 'https://cam.damiancb.com', bg: '#143a36', fg: '#5fe3cf' },
-  { mono: '>_', name: 'sshserver.damiancb', sub: 'Acceso SSH remoto', tag: 'ssh', url: 'https://sshserver.damiancb.com', bg: '#13351f', fg: '#74e08f' },
-  { mono: '>_', name: 'sshraspi.damiancb', sub: 'SSH Raspberry Pi', tag: 'ssh', url: 'https://sshraspi.damiancb.com', bg: '#13351f', fg: '#74e08f' },
+  // Wetty ocultos: el dashboard es público, así que no anunciamos dónde vive el SSH.
+  // Los dominios siguen activos (y detrás de Cloudflare Access), solo dejan de listarse.
+  // { mono: '>_', name: 'sshserver.damiancb', sub: 'Acceso SSH remoto', tag: 'ssh', url: 'https://sshserver.damiancb.com', bg: '#13351f', fg: '#74e08f' },
+  // { mono: '>_', name: 'sshraspi.damiancb', sub: 'SSH Raspberry Pi', tag: 'ssh', url: 'https://sshraspi.damiancb.com', bg: '#13351f', fg: '#74e08f' },
   { mono: '⬡', name: 'raspberry.damiancb', sub: 'Portainer Raspberry', tag: 'portainer', url: 'https://raspberry.damiancb.com', bg: '#0f3147', fg: '#5cc6ff' },
   { mono: 'SP', name: 'spamurai.damiancb', sub: 'Bot de publicaciones imagen/texto', tag: 'spamurai', url: 'https://spamurai.damiancb.com', bg: '#3a1430', fg: '#ff7ad9' },
 ]
