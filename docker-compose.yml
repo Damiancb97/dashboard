@@ -9,16 +9,6 @@ services:
     # remain reachable via the host's loopback / LAN addresses.
     network_mode: host
 
-  wetty:
-    image: wettyoss/wetty
-    container_name: wetty
-    restart: unless-stopped
-    command: --ssh-host host.docker.internal --ssh-port 22 --base /
-    ports:
-      - "3000:3000"
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
-
   zomboid-sidecar:
     build: ~/projects/dashboard/zomboid-sidecar
     container_name: zomboid-sidecar
