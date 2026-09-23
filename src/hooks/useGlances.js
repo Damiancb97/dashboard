@@ -93,10 +93,13 @@ async function fetchProcs(limit = 6) {
     tryGet('processlist/cpu_percent'),
     tryGet('processlist/memory_info'),
   ])
-  const pids = pid?.pid ?? []
-  const names = name?.name ?? []
-  const cpus = cpu?.cpu_percent ?? []
-  const mems = mem?.memory_info ?? []
+  // A partial snapshot would mislabel rows; report failure so the caller keeps
+  // the previous list.
+  if (!pid || !name || !cpu || !mem) return null
+  const pids = pid.pid ?? []
+  const names = name.name ?? []
+  const cpus = cpu.cpu_percent ?? []
+  const mems = mem.memory_info ?? []
   const n = Math.min(pids.length, names.length, cpus.length, mems.length)
   const rows = []
   for (let i = 0; i < n; i++) {
@@ -112,6 +115,14 @@ async function fetchProcs(limit = 6) {
 
 const EMPTY_HIST = { serverCpu: [], gpu: [], netDown: [], netUp: [] }
 
+// Glances 3.4 serves one request at a time, and a stats refresh blocks it for
+// ~3s (mostly the containers plugin). Firing every endpoint every 3s queued
+// requests behind that refresh until nginx timed them out, so each group is
+// polled only as often as its data actually changes.
+const FAST_MS = 3000 // cpu, mem, temperatures, network, GPU
+const MEDIUM_MS = 10000 // containers, top processes
+const SLOW_MS = 60000 // disks, uptime
+
 export function useGlances() {
   const [data, setData] = useState({
     cpu: null, mem: null, containers: [], sensors: null, gpu: null,
@@ -119,7 +130,6 @@ export function useGlances() {
     history: EMPTY_HIST,
   })
   const hist = useRef({ serverCpu: [], gpu: [], netDown: [], netUp: [] })
-  const busy = useRef(false)
 
   useEffect(() => {
     function push(key, value) {
@@ -128,60 +138,87 @@ export function useGlances() {
       if (arr.length > HIST_LEN) arr.shift()
     }
 
-    async function poll() {
-      // Skip if the previous poll is still in flight (a slow/hung upstream
-      // must not let 3s-interval ticks stack up).
-      if (busy.current) return
-      busy.current = true
-      try {
-        const [cpu, mem, containers, sensors, gpu, network, fs, procs, uptime] =
-          await Promise.all([
-            get('cpu'),
-            get('mem'),
-            get('containers'),
-            tryGet('sensors'),
-            fetchGpu(),
-            tryGet('network'),
-            tryGet('fs'),
-            fetchProcs(),
-            tryGet('uptime'),
-          ])
+    // A failed request must not blank a panel: only fields that came back are
+    // merged, so every panel keeps its last good value until the next success.
+    const fresh = patch =>
+      Object.fromEntries(Object.entries(patch).filter(([, v]) => v != null))
+    const merge = patch => setData(prev => ({ ...prev, ...fresh(patch) }))
 
-        const net = netRates(pickInterface(network))
+    async function pollFast() {
+      const [cpu, mem, sensors, gpu, network] = await Promise.all([
+        tryGet('cpu'),
+        tryGet('mem'),
+        tryGet('sensors'),
+        fetchGpu(),
+        tryGet('network'),
+      ])
+      const net = network ? netRates(pickInterface(network)) : null
 
-        push('serverCpu', cpu?.total ?? 0)
-        push('gpu', gpu?.proc ?? 0)
+      if (cpu) push('serverCpu', cpu.total ?? 0)
+      push('gpu', gpu?.proc ?? 0)
+      if (net) {
         push('netDown', net.down)
         push('netUp', net.up)
-
-        setData({
-          cpu,
-          mem,
-          containers: Array.isArray(containers) ? containers : (containers.containers ?? []),
-          sensors,
-          gpu,
-          net,
-          disks: cleanDisks(fs),
-          procs,
-          uptime,
-          online: true,
-          history: {
-            serverCpu: [...hist.current.serverCpu],
-            gpu: [...hist.current.gpu],
-            netDown: [...hist.current.netDown],
-            netUp: [...hist.current.netUp],
-          },
-        })
-      } catch (e) {
-        console.error('Glances error:', e)
-        setData(prev => ({ ...prev, online: false }))
-      } finally {
-        busy.current = false
       }
+
+      setData(prev => ({
+        ...prev,
+        ...fresh({ cpu, mem, sensors, net }),
+        // The GPU card shows OFFLINE when the sidecar is down, so its value is
+        // replaced rather than kept.
+        gpu,
+        online: cpu != null,
+        history: {
+          serverCpu: [...hist.current.serverCpu],
+          gpu: [...hist.current.gpu],
+          netDown: [...hist.current.netDown],
+          netUp: [...hist.current.netUp],
+        },
+      }))
     }
-    poll()
-    const id = setInterval(poll, 3000)
-    return () => clearInterval(id)
+
+    async function pollMedium() {
+      const [containers, procs] = await Promise.all([
+        tryGet('containers'),
+        fetchProcs(),
+      ])
+      merge({
+        containers: containers == null ? null
+          : Array.isArray(containers) ? containers : (containers.containers ?? []),
+        procs,
+      })
+    }
+
+    async function pollSlow() {
+      const [fs, uptime] = await Promise.all([tryGet('fs'), tryGet('uptime')])
+      merge({ disks: fs ? cleanDisks(fs) : null, uptime })
+    }
+
+    // Each group skips a tick while its previous poll is still in flight, so a
+    // slow upstream cannot let requests stack up.
+    function every(ms, poll) {
+      let busy = false
+      const run = async () => {
+        if (busy) return
+        busy = true
+        try {
+          await poll()
+        } catch (e) {
+          console.error('Glances error:', e)
+        } finally {
+          busy = false
+        }
+      }
+      run()
+      return setInterval(run, ms)
+    }
+
+    const ids = [
+      every(FAST_MS, pollFast),
+      every(MEDIUM_MS, pollMedium),
+      every(SLOW_MS, pollSlow),
+    ]
+    return () => ids.forEach(clearInterval)
   }, [])
 
   return data
