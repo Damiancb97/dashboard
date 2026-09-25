@@ -49,6 +49,7 @@ const PUBLIC_SVC = [
 const PRIVATE_SVC = [
   { mono: '☁', port: 8090, name: 'Cloud personal', sub: 'Archivos · fotos · vídeos', bg: '#143a36', fg: '#5fe3cf' },
   { mono: 'WF', port: 8089, name: 'Who Fed?', sub: 'Ranked Flex · League of Legends', bg: '#14203a', fg: '#e2b358' },
+  { mono: 'WG', port: 8055, name: 'whogrow', sub: 'Historial SoloQ · League of Legends', bg: '#10233d', fg: '#6aa8f0' },
   { mono: 'SX', port: 8181, name: 'sotrixOS', sub: 'Sistema personal', bg: '#1a2340', fg: '#8fa8ff' },
   { mono: 'PM', port: 8765, name: 'Polymarket · Codex', sub: 'Bot de trading', bg: '#3d2c10', fg: '#f0c068', stopped: true },
   { mono: 'PM', port: 8501, name: 'Polymarket · Claude', sub: 'Dashboard Streamlit', bg: '#3d2c10', fg: '#f0c068' },
