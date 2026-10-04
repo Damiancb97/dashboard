@@ -17,6 +17,20 @@ async function tryGet(path) {
   }
 }
 
+// Containers come from the docker-stats sidecar, not Glances: Glances' plugin
+// kept a `docker stats` stream open per container and dockerd paid for it 24/7.
+// The rows keep Glances' field names (name, Status, cpu_percent, memory_usage).
+async function fetchContainers() {
+  try {
+    const r = await fetch('/docker-stats/containers')
+    if (!r.ok) return null
+    const data = await r.json()
+    return Array.isArray(data) ? data : null
+  } catch {
+    return null
+  }
+}
+
 async function fetchGpu() {
   try {
     const r = await fetch('/gpu-stats/gpu')
@@ -115,10 +129,10 @@ async function fetchProcs(limit = 6) {
 
 const EMPTY_HIST = { serverCpu: [], gpu: [], netDown: [], netUp: [] }
 
-// Glances 3.4 serves one request at a time, and a stats refresh blocks it for
-// ~3s (mostly the containers plugin). Firing every endpoint every 3s queued
-// requests behind that refresh until nginx timed them out, so each group is
-// polled only as often as its data actually changes.
+// Glances 3.4 serves one request at a time. When its containers plugin made
+// each stats refresh block it for ~3s, firing every endpoint every 3s queued
+// requests until nginx timed them out, so each group is polled only as often
+// as its data actually changes.
 const FAST_MS = 3000 // cpu, mem, temperatures, network, GPU
 const MEDIUM_MS = 10000 // containers, top processes
 const SLOW_MS = 60000 // disks, uptime
@@ -179,14 +193,10 @@ export function useGlances() {
 
     async function pollMedium() {
       const [containers, procs] = await Promise.all([
-        tryGet('containers'),
+        fetchContainers(),
         fetchProcs(),
       ])
-      merge({
-        containers: containers == null ? null
-          : Array.isArray(containers) ? containers : (containers.containers ?? []),
-        procs,
-      })
+      merge({ containers, procs })
     }
 
     async function pollSlow() {

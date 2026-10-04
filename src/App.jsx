@@ -51,6 +51,7 @@ const PRIVATE_SVC = [
   { mono: 'WF', port: 8089, name: 'Who Fed?', sub: 'Ranked Flex · League of Legends', bg: '#14203a', fg: '#e2b358' },
   { mono: 'WG', port: 8055, name: 'whogrow', sub: 'Historial SoloQ · League of Legends', bg: '#10233d', fg: '#6aa8f0' },
   { mono: 'SX', port: 8181, name: 'sotrixOS', sub: 'Sistema personal', bg: '#1a2340', fg: '#8fa8ff' },
+  { mono: 'CF', port: 8095, name: 'ClipForge', sub: 'Recopilatorios de clips · YouTube', bg: '#24163d', fg: '#a970ff' },
   { mono: 'PM', port: 8765, name: 'Polymarket · Codex', sub: 'Bot de trading', bg: '#3d2c10', fg: '#f0c068', stopped: true },
   { mono: 'PM', port: 8501, name: 'Polymarket · Claude', sub: 'Dashboard Streamlit', bg: '#3d2c10', fg: '#f0c068' },
   { mono: 'BI', port: 8088, name: 'Learning-Bet IA', sub: 'Modelo de apuestas', bg: '#2b1d44', fg: '#c8a4ff', stopped: true },

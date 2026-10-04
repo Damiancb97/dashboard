@@ -30,11 +30,11 @@ App.jsx
 ├── Weather.jsx        — Weather for A Coruña via Open-Meteo (polls 10 min)
 ├── ServerStats.jsx    — CPU & memory bars via Glances API (polls 3 sec)
 ├── SiteCard.jsx       — Quick-access links (rendered from SITES array in App.jsx)
-└── Containers.jsx     — Docker container status table via Glances API (polls 3 sec)
+└── Containers.jsx     — Docker container status table via the docker-stats sidecar (polls 10 sec)
 ```
 
 **Data fetching** is handled by two custom hooks in `src/hooks/`:
-- `useGlances.js` — polls `/glances/api/3` (proxied to `http://localhost:61208` in dev, `http://host.docker.internal:61208` in production via Nginx)
+- `useGlances.js` — polls `/glances/api/3` (proxied to `http://localhost:61208` in dev, `http://host.docker.internal:61208` in production via Nginx), `/gpu-stats/gpu` and `/docker-stats/containers`. Containers come from the `docker-stats` sidecar in `~/docker/glances/` (port 61213, loopback only), not Glances: Glances' containers plugin is disabled because its per-container `docker stats` streams kept dockerd at ~50% of a core. The sidecar reads CPU/RAM from cgroups and keeps Glances' field names.
 - `useWeather.js` — fetches from Open-Meteo API (no auth required)
 
 **Styling:** CSS Modules per component (`ComponentName.module.css`). Global theme lives in `src/index.css` — dark background (`#050510`), cyan monospace text, animated grid + scanline overlays.
