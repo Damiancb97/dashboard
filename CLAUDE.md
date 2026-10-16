@@ -39,6 +39,8 @@ App.jsx
 
 **Styling:** CSS Modules per component (`ComponentName.module.css`). Global theme lives in `src/index.css` — dark background (`#050510`), cyan monospace text, animated grid + scanline overlays.
 
+**Project Zomboid** (`zomboid-sidecar/`, `zomboid-discord-bot/`, `ZomboidCard.jsx`) is parked since 2026-10-16: containers stopped, sidecar behind the `zomboid` compose profile, card hidden via `ZOMBOID_ENABLED` in `App.jsx`. See `ZOMBOID.md` for how to bring it back.
+
 ## Deployment
 
 Multi-stage Docker build (Node 20-Alpine → Nginx-Alpine). `nginx.conf` handles SPA fallback routing and proxies `/glances/*` to the host's Glances instance. The compose file exposes port 8086 and uses `host-gateway` to reach host services.

@@ -13,6 +13,9 @@ services:
     build: ~/projects/dashboard/zomboid-sidecar
     container_name: zomboid-sidecar
     restart: unless-stopped
+    # Aparcado desde 2026-10-16: con el perfil, un `docker compose up -d` normal no lo
+    # arranca. Cómo volver a levantar todo: ZOMBOID.md.
+    profiles: ["zomboid"]
     network_mode: host
     pid: host
     privileged: true

@@ -31,6 +31,10 @@ function resolveLanHost() {
 
 const LAN_HOST = resolveLanHost()
 
+// Project Zomboid is parked: its containers are stopped, so the card would only poll
+// a dead sidecar every 3s. Flip to true when bringing it back — see ZOMBOID.md.
+const ZOMBOID_ENABLED = false
+
 // Públicos — domains exposed over the internet.
 const PUBLIC_SVC = [
   { mono: 'DC', name: 'damiancb.com', sub: 'Portfolio personal', tag: 'damiancb.com', url: 'https://damiancb.com', bg: '#15324f', fg: '#7cc0ff' },
@@ -125,8 +129,12 @@ export default function App() {
           <ProcessesCard procs={g.procs} />
         </div>
 
-        <SectionHeader title="PROJECT ZOMBOID DEDICATED SERVER" />
-        <ZomboidCard />
+        {ZOMBOID_ENABLED && (
+          <>
+            <SectionHeader title="PROJECT ZOMBOID DEDICATED SERVER" />
+            <ZomboidCard />
+          </>
+        )}
 
         <div className={s.split}>
           <div>
