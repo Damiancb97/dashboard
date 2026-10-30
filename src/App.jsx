@@ -37,30 +37,34 @@ const ZOMBOID_ENABLED = false
 
 // Públicos — domains exposed over the internet.
 const PUBLIC_SVC = [
-  { mono: 'DC', name: 'damiancb.com', sub: 'Portfolio personal', tag: 'damiancb.com', url: 'https://damiancb.com', bg: '#15324f', fg: '#7cc0ff' },
-  { mono: 'TG', name: 'timedgg.com', sub: 'World of Warcraft', tag: 'timed.gg', url: 'https://timedgg.com', bg: '#2c2150', fg: '#c4a6ff' },
-  { mono: 'AC', name: 'algodonconamor.es', sub: 'Algodón con amor', tag: 'algodon.es', url: 'https://algodonconamor.es', bg: '#4a1f33', fg: '#ff9bc0' },
+  { mono: 'DC', name: 'damiancb.com', sub: 'Portfolio personal', tag: 'damiancb.com', url: 'https://damiancb.com', icon: '/icons/services/damiancb.png', bg: '#15324f', fg: '#7cc0ff' },
+  { mono: 'TG', name: 'timedgg.com', sub: 'World of Warcraft', tag: 'timed.gg', url: 'https://timedgg.com', icon: '/icons/services/timedgg.png', bg: '#2c2150', fg: '#c4a6ff' },
+  { mono: 'AC', name: 'algodonconamor.es', sub: 'Algodón con amor', tag: 'algodon.es', url: 'https://algodonconamor.es', icon: '/icons/services/algodon.png', bg: '#4a1f33', fg: '#ff9bc0' },
   { mono: '◉', name: 'cam.damiancb.com', sub: 'Cámara de seguridad', tag: 'cam', url: 'https://cam.damiancb.com', bg: '#143a36', fg: '#5fe3cf' },
   // Wetty ocultos: el dashboard es público, así que no anunciamos dónde vive el SSH.
   // Los dominios siguen activos (y detrás de Cloudflare Access), solo dejan de listarse.
   // { mono: '>_', name: 'sshserver.damiancb', sub: 'Acceso SSH remoto', tag: 'ssh', url: 'https://sshserver.damiancb.com', bg: '#13351f', fg: '#74e08f' },
   // { mono: '>_', name: 'sshraspi.damiancb', sub: 'SSH Raspberry Pi', tag: 'ssh', url: 'https://sshraspi.damiancb.com', bg: '#13351f', fg: '#74e08f' },
   { mono: '⬡', name: 'raspberry.damiancb', sub: 'Portainer Raspberry', tag: 'portainer', url: 'https://raspberry.damiancb.com', bg: '#0f3147', fg: '#5cc6ff' },
-  { mono: 'SP', name: 'spamurai.damiancb', sub: 'Bot de publicaciones imagen/texto', tag: 'spamurai', url: 'https://spamurai.damiancb.com', bg: '#3a1430', fg: '#ff7ad9' },
+  { mono: 'SP', name: 'spamurai.damiancb', sub: 'Bot de publicaciones imagen/texto', tag: 'spamurai', url: 'https://spamurai.damiancb.com', icon: '/icons/services/spamurai.png', bg: '#3a1430', fg: '#ff7ad9' },
 ]
 
 // Privados — only reachable on the LAN; URL host adapts to how you connect.
 const PRIVATE_SVC = [
-  { mono: '☁', port: 8090, name: 'Cloud personal', sub: 'Archivos · fotos · vídeos', bg: '#143a36', fg: '#5fe3cf' },
-  { mono: 'WF', port: 8089, name: 'Who Fed?', sub: 'Ranked Flex · League of Legends', bg: '#14203a', fg: '#e2b358' },
-  { mono: 'WG', port: 8055, name: 'whogrow', sub: 'Historial SoloQ · League of Legends', bg: '#10233d', fg: '#6aa8f0' },
-  { mono: 'SX', port: 8181, name: 'sotrixOS', sub: 'Sistema personal', bg: '#1a2340', fg: '#8fa8ff' },
+  { mono: '☁', port: 8090, name: 'Cloud personal', sub: 'Archivos · fotos · vídeos', icon: '/icons/services/cloud.svg', bg: '#143a36', fg: '#5fe3cf' },
+  { mono: 'WF', port: 8089, name: 'Who Fed?', sub: 'Ranked Flex · League of Legends', icon: '/icons/services/whofed.png', bg: '#14203a', fg: '#e2b358' },
+  { mono: 'WG', port: 8055, name: 'whogrow', sub: 'Historial SoloQ · League of Legends', icon: '/icons/services/whogrow.png', bg: '#10233d', fg: '#6aa8f0' },
+  { mono: 'SX', port: 8181, name: 'sotrixOS', sub: 'Sistema personal', icon: '/icons/services/sotrixos.svg', bg: '#1a2340', fg: '#8fa8ff' },
+  // Libreta: host fijo — el contenedor solo publica el puerto en la IP de Tailscale y loopback.
+  { mono: 'LB', port: 8110, host: TAILSCALE_HOST, name: 'Libreta', sub: 'Hoy · tareas · ideas', icon: '/icons/services/libreta.svg', bg: '#1e2a44', fg: '#f5e04f' },
+  // Physiq: de momento solo en LAN (Vite dev); más adelante tendrá subdominio y pasará a PUBLIC_SVC.
+  { mono: 'PQ', port: 5180, name: 'Physiq', sub: 'Peso · composición · kcal', icon: '/icons/services/physiq.svg', bg: '#3d1a1a', fg: '#ff7a6b' },
   { mono: 'CF', port: 8095, name: 'ClipForge', sub: 'Recopilatorios de clips · YouTube', bg: '#24163d', fg: '#a970ff' },
   { mono: 'PM', port: 8765, name: 'Polymarket · Codex', sub: 'Bot de trading', bg: '#3d2c10', fg: '#f0c068', stopped: true },
-  { mono: 'PM', port: 8501, name: 'Polymarket · Claude', sub: 'Dashboard Streamlit', bg: '#3d2c10', fg: '#f0c068' },
+  { mono: '🤖', port: 8501, name: 'Polymarket · Claude', sub: 'Dashboard Streamlit', bg: '#3d2c10', fg: '#f0c068' },
   { mono: 'BI', port: 8088, name: 'Learning-Bet IA', sub: 'Modelo de apuestas', bg: '#2b1d44', fg: '#c8a4ff', stopped: true },
   // Coinly: host fijo — los redirect URIs del cliente Keycloak solo admiten esta IP.
-  { mono: '€', port: 5173, host: '192.168.1.139', name: 'Coinly', sub: 'Finanzas personales', bg: '#0f3d2c', fg: '#5fe39b' },
+  { mono: '€', port: 5173, host: '192.168.1.139', name: 'Coinly', sub: 'Finanzas personales', icon: '/icons/services/coinly.svg', bg: '#0f3d2c', fg: '#5fe39b' },
 ].map(svc => ({
   ...svc,
   tag: `:${svc.port}`,

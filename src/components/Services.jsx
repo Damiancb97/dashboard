@@ -5,7 +5,10 @@ function ServiceCard({ item, variant }) {
   const cls = [s.item, variant === 'priv' ? s.itemPriv : '', stopped ? s.itemStopped : ''].filter(Boolean).join(' ')
   const body = (
     <>
-      <div className={s.mono} style={{ background: item.bg, color: item.fg }}>{item.mono}</div>
+      {/* El favicon de la pestaña del propio servicio; si no tiene, el monograma. */}
+      {item.icon
+        ? <img className={s.icon} src={item.icon} alt="" />
+        : <div className={s.mono} style={{ background: item.bg, color: item.fg }}>{item.mono}</div>}
       <div className={s.info}>
         <div className={s.name}>{item.name}</div>
         <div className={s.sub}>{item.sub}</div>

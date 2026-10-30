@@ -64,6 +64,14 @@
   flex: 0 0 auto;
 }
 
+.icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  object-fit: contain;
+  flex: 0 0 auto;
+}
+
 .info { flex: 1; min-width: 0; }
 .name { font-size: 12px; font-weight: 600; color: #dbe2ea; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .sub { font-size: 10.5px; color: var(--muted); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
