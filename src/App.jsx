@@ -47,6 +47,8 @@ const PUBLIC_SVC = [
   // { mono: '>_', name: 'sshraspi.damiancb', sub: 'SSH Raspberry Pi', tag: 'ssh', url: 'https://sshraspi.damiancb.com', bg: '#13351f', fg: '#74e08f' },
   { mono: '⬡', name: 'raspberry.damiancb', sub: 'Portainer Raspberry', tag: 'portainer', url: 'https://raspberry.damiancb.com', bg: '#0f3147', fg: '#5cc6ff' },
   { mono: 'SP', name: 'spamurai.damiancb', sub: 'Bot de publicaciones imagen/texto', tag: 'spamurai', url: 'https://spamurai.damiancb.com', icon: '/icons/services/spamurai.png', bg: '#3a1430', fg: '#ff7ad9' },
+  { mono: 'LS', name: 'lolsurvivor.damiancb', sub: 'Juego survivors · League of Legends', tag: 'lolsurvivor', url: 'https://lolsurvivor.damiancb.com', icon: '/icons/services/lolsurvivor.png', bg: '#0a0c0f', fg: '#c8aa6e' },
+  { mono: 'PQ', name: 'physiq.damiancb', sub: 'Peso · composición · kcal', tag: 'physiq', url: 'https://physiq.damiancb.com', icon: '/icons/services/physiq.svg', bg: '#3d1a1a', fg: '#ff7a6b' },
 ]
 
 // Privados — only reachable on the LAN; URL host adapts to how you connect.
@@ -57,8 +59,6 @@ const PRIVATE_SVC = [
   { mono: 'SX', port: 8181, name: 'sotrixOS', sub: 'Sistema personal', icon: '/icons/services/sotrixos.svg', bg: '#1a2340', fg: '#8fa8ff' },
   // Libreta: host fijo — el contenedor solo publica el puerto en la IP de Tailscale y loopback.
   { mono: 'LB', port: 8110, host: TAILSCALE_HOST, name: 'Libreta', sub: 'Hoy · tareas · ideas', icon: '/icons/services/libreta.svg', bg: '#1e2a44', fg: '#f5e04f' },
-  // Physiq: de momento solo en LAN (Vite dev); más adelante tendrá subdominio y pasará a PUBLIC_SVC.
-  { mono: 'PQ', port: 5180, name: 'Physiq', sub: 'Peso · composición · kcal', icon: '/icons/services/physiq.svg', bg: '#3d1a1a', fg: '#ff7a6b' },
   { mono: 'CF', port: 8095, name: 'ClipForge', sub: 'Recopilatorios de clips · YouTube', bg: '#24163d', fg: '#a970ff' },
   { mono: 'PM', port: 8765, name: 'Polymarket · Codex', sub: 'Bot de trading', bg: '#3d2c10', fg: '#f0c068', stopped: true },
   { mono: '🤖', port: 8501, name: 'Polymarket · Claude', sub: 'Dashboard Streamlit', bg: '#3d2c10', fg: '#f0c068' },
