@@ -29,7 +29,7 @@ export function useRpiGlances() {
     async function poll() {
       // Skip if the previous poll is still in flight — a powered-off Pi must
       // not let 3s-interval ticks stack up while requests are pending.
-      if (busy.current) return
+      if (document.hidden || busy.current) return
       busy.current = true
       try {
         const [cpu, mem, sensors, uptime] = await Promise.all([
@@ -54,7 +54,11 @@ export function useRpiGlances() {
     }
     poll()
     const id = setInterval(poll, 3000)
-    return () => clearInterval(id)
+    document.addEventListener('visibilitychange', poll)
+    return () => {
+      clearInterval(id)
+      document.removeEventListener('visibilitychange', poll)
+    }
   }, [])
 
   return data

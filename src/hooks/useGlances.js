@@ -42,33 +42,6 @@ async function fetchGpu() {
   }
 }
 
-// Pick the host's primary network interface (most cumulative traffic),
-// skipping loopback and virtual/bridge/container interfaces.
-function pickInterface(network) {
-  if (!Array.isArray(network)) return null
-  const real = network.filter(
-    i => !/^(lo|veth|br-|docker|virbr|vnet)/.test(i.interface_name)
-  )
-  if (!real.length) return null
-  return real.reduce((a, b) =>
-    (b.cumulative_rx ?? 0) > (a.cumulative_rx ?? 0) ? b : a
-  )
-}
-
-function netRates(iface) {
-  if (!iface) return { down: 0, up: 0, totalRx: 0, totalTx: 0, name: 'eth0' }
-  const t = iface.time_since_update || 1
-  const rxRate = iface.bytes_recv_rate_per_sec ?? (iface.rx ?? 0) / t
-  const txRate = iface.bytes_sent_rate_per_sec ?? (iface.tx ?? 0) / t
-  return {
-    name: iface.interface_name,
-    down: (rxRate * 8) / 1e6, // Mbps
-    up: (txRate * 8) / 1e6,
-    totalRx: iface.cumulative_rx ?? 0,
-    totalTx: iface.cumulative_tx ?? 0,
-  }
-}
-
 // Real host filesystems: dedupe by device, drop pseudo/virtual fs.
 function cleanDisks(fs) {
   if (!Array.isArray(fs)) return []
@@ -93,57 +66,23 @@ function cleanDisks(fs) {
   })
 }
 
-// Top processes by CPU. The dashboard is public, so we deliberately avoid the
-// full /processlist object (and the nginx proxy blocks it): command lines and
-// usernames can leak secrets. The Glances API only returns one field per
-// request, so we fetch the safe fields individually and zip them by index —
-// the arrays come from the same snapshot, so they line up. A process churning
-// between the parallel requests can only mislabel a row cosmetically; Math.min
-// guards against index errors.
-async function fetchProcs(limit = 6) {
-  const [pid, name, cpu, mem] = await Promise.all([
-    tryGet('processlist/pid'),
-    tryGet('processlist/name'),
-    tryGet('processlist/cpu_percent'),
-    tryGet('processlist/memory_info'),
-  ])
-  // A partial snapshot would mislabel rows; report failure so the caller keeps
-  // the previous list.
-  if (!pid || !name || !cpu || !mem) return null
-  const pids = pid.pid ?? []
-  const names = name.name ?? []
-  const cpus = cpu.cpu_percent ?? []
-  const mems = mem.memory_info ?? []
-  const n = Math.min(pids.length, names.length, cpus.length, mems.length)
-  const rows = []
-  for (let i = 0; i < n; i++) {
-    rows.push({
-      pid: pids[i],
-      cmd: names[i],
-      cpu: cpus[i] ?? 0,
-      memMB: Array.isArray(mems[i]) ? Math.round(mems[i][0] / 1048576) : null,
-    })
-  }
-  return rows.sort((a, b) => b.cpu - a.cpu).slice(0, limit)
-}
-
-const EMPTY_HIST = { serverCpu: [], gpu: [], netDown: [], netUp: [] }
+const EMPTY_HIST = { serverCpu: [], gpu: [] }
 
 // Glances 3.4 serves one request at a time. When its containers plugin made
 // each stats refresh block it for ~3s, firing every endpoint every 3s queued
 // requests until nginx timed them out, so each group is polled only as often
 // as its data actually changes.
-const FAST_MS = 3000 // cpu, mem, temperatures, network, GPU
-const MEDIUM_MS = 10000 // containers, top processes
+const FAST_MS = 3000 // cpu, mem, temperatures, GPU
+const MEDIUM_MS = 10000 // containers
 const SLOW_MS = 60000 // disks, uptime
 
 export function useGlances() {
   const [data, setData] = useState({
     cpu: null, mem: null, containers: [], sensors: null, gpu: null,
-    net: null, disks: [], procs: [], uptime: null, online: false,
+    disks: [], uptime: null, online: false,
     history: EMPTY_HIST,
   })
-  const hist = useRef({ serverCpu: [], gpu: [], netDown: [], netUp: [] })
+  const hist = useRef({ serverCpu: [], gpu: [] })
 
   useEffect(() => {
     function push(key, value) {
@@ -159,25 +98,19 @@ export function useGlances() {
     const merge = patch => setData(prev => ({ ...prev, ...fresh(patch) }))
 
     async function pollFast() {
-      const [cpu, mem, sensors, gpu, network] = await Promise.all([
+      const [cpu, mem, sensors, gpu] = await Promise.all([
         tryGet('cpu'),
         tryGet('mem'),
         tryGet('sensors'),
         fetchGpu(),
-        tryGet('network'),
       ])
-      const net = network ? netRates(pickInterface(network)) : null
 
       if (cpu) push('serverCpu', cpu.total ?? 0)
       push('gpu', gpu?.proc ?? 0)
-      if (net) {
-        push('netDown', net.down)
-        push('netUp', net.up)
-      }
 
       setData(prev => ({
         ...prev,
-        ...fresh({ cpu, mem, sensors, net }),
+        ...fresh({ cpu, mem, sensors }),
         // The GPU card shows OFFLINE when the sidecar is down, so its value is
         // replaced rather than kept.
         gpu,
@@ -185,18 +118,13 @@ export function useGlances() {
         history: {
           serverCpu: [...hist.current.serverCpu],
           gpu: [...hist.current.gpu],
-          netDown: [...hist.current.netDown],
-          netUp: [...hist.current.netUp],
         },
       }))
     }
 
     async function pollMedium() {
-      const [containers, procs] = await Promise.all([
-        fetchContainers(),
-        fetchProcs(),
-      ])
-      merge({ containers, procs })
+      const containers = await fetchContainers()
+      merge({ containers })
     }
 
     async function pollSlow() {
@@ -209,7 +137,7 @@ export function useGlances() {
     function every(ms, poll) {
       let busy = false
       const run = async () => {
-        if (busy) return
+        if (document.hidden || busy) return
         busy = true
         try {
           await poll()
@@ -220,7 +148,12 @@ export function useGlances() {
         }
       }
       run()
-      return setInterval(run, ms)
+      const id = setInterval(run, ms)
+      document.addEventListener('visibilitychange', run)
+      return () => {
+        clearInterval(id)
+        document.removeEventListener('visibilitychange', run)
+      }
     }
 
     const ids = [
@@ -228,7 +161,7 @@ export function useGlances() {
       every(MEDIUM_MS, pollMedium),
       every(SLOW_MS, pollSlow),
     ]
-    return () => ids.forEach(clearInterval)
+    return () => ids.forEach(stop => stop())
   }, [])
 
   return data

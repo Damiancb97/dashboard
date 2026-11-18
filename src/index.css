@@ -2,16 +2,16 @@
 
 :root {
   --accent: #2dd4bf;
-  --bg: #0a0c10;
-  --card: #13161d;
-  --card-alt: #0f1217;
-  --border: #20242e;
+  --bg: #0d1015;
+  --card: #151a21;
+  --card-alt: #181e26;
+  --border: #28303b;
   --border-soft: #1a1e26;
   --text: #e6edf3;
   --text-dim: #aeb6c2;
-  --muted: #6b7280;
-  --muted-2: #7a8290;
-  --faint: #5b6472;
+  --muted: #929caa;
+  --muted-2: #929caa;
+  --faint: #8b96a5;
   --green: #3fb37f;
   --green-bright: #54c98f;
   --blue: #4f9dff;
@@ -25,10 +25,7 @@
 html, body { margin: 0; background: var(--bg); }
 
 body {
-  background-image:
-    linear-gradient(rgba(255,255,255,0.018) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255,255,255,0.018) 1px, transparent 1px);
-  background-size: 46px 46px;
+  background-image: radial-gradient(ellipse at 20% 0%, #172b2b55, transparent 45%);
   color: var(--text);
   font-family: var(--sans);
   min-height: 100vh;
@@ -43,3 +40,9 @@ body {
 ::-webkit-scrollbar-thumb { background: #252a35; border-radius: 6px; }
 ::-webkit-scrollbar-thumb:hover { background: #323847; }
 ::-webkit-scrollbar-track { background: transparent; }
+
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
+input:focus-visible { outline: 2px solid var(--accent); }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
+}

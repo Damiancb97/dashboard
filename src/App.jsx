@@ -7,9 +7,7 @@ import {
 import Header from './components/Header'
 import SectionHeader from './components/SectionHeader'
 import StatCard from './components/StatCard'
-import NetworkCard from './components/NetworkCard'
 import StorageCard from './components/StorageCard'
-import ProcessesCard from './components/ProcessesCard'
 import Containers from './components/Containers'
 import Services from './components/Services'
 import ZomboidCard from './components/ZomboidCard'
@@ -48,13 +46,13 @@ const PUBLIC_SVC = [
   { mono: '⬡', name: 'raspberry.damiancb', sub: 'Portainer Raspberry', tag: 'portainer', url: 'https://raspberry.damiancb.com', bg: '#0f3147', fg: '#5cc6ff' },
   { mono: 'SP', name: 'spamurai.damiancb', sub: 'Bot de publicaciones imagen/texto', tag: 'spamurai', url: 'https://spamurai.damiancb.com', icon: '/icons/services/spamurai.png', bg: '#3a1430', fg: '#ff7ad9' },
   { mono: 'LS', name: 'lolsurvivor.damiancb', sub: 'Juego survivors · League of Legends', tag: 'lolsurvivor', url: 'https://lolsurvivor.damiancb.com', icon: '/icons/services/lolsurvivor.png', bg: '#0a0c0f', fg: '#c8aa6e' },
-  { mono: 'PQ', name: 'physiq.damiancb', sub: 'Peso · composición · kcal', tag: 'physiq', url: 'https://physiq.damiancb.com', icon: '/icons/services/physiq.svg', bg: '#3d1a1a', fg: '#ff7a6b' },
+  { mono: 'WF', name: 'whofed.damiancb', sub: 'Ranked Flex · League of Legends', tag: 'whofed', url: 'https://whofed.damiancb.com', icon: '/icons/services/whofed.png', bg: '#14203a', fg: '#e2b358' },
+  { mono: 'PQ', name: 'physiq.damiancb', sub: 'Peso · composición · kcal', tag: 'physiq', url: 'https://physiq.damiancb.com', icon: '/icons/services/physiq.png', bg: '#3d1a1a', fg: '#ff7a6b' },
 ]
 
 // Privados — only reachable on the LAN; URL host adapts to how you connect.
 const PRIVATE_SVC = [
   { mono: '☁', port: 8090, name: 'Cloud personal', sub: 'Archivos · fotos · vídeos', icon: '/icons/services/cloud.svg', bg: '#143a36', fg: '#5fe3cf' },
-  { mono: 'WF', port: 8089, name: 'Who Fed?', sub: 'Ranked Flex · League of Legends', icon: '/icons/services/whofed.png', bg: '#14203a', fg: '#e2b358' },
   { mono: 'WG', port: 8055, name: 'whogrow', sub: 'Historial SoloQ · League of Legends', icon: '/icons/services/whogrow.png', bg: '#10233d', fg: '#6aa8f0' },
   { mono: 'SX', port: 8181, name: 'sotrixOS', sub: 'Sistema personal', icon: '/icons/services/sotrixos.svg', bg: '#1a2340', fg: '#8fa8ff' },
   // Libreta: host fijo — el contenedor solo publica el puerto en la IP de Tailscale y loopback.
@@ -75,24 +73,28 @@ export default function App() {
   const g = useGlances()
   const rpi = useRpiGlances()
 
-  const cpuPct = Math.round(g.cpu?.total ?? 0)
+  const cpuPct = g.cpu?.total != null ? Math.round(g.cpu.total) : null
   const memPct = Math.round(g.mem?.percent ?? 0)
   const srvTemp = getCpuTemp(g.sensors)
 
   const gpu = g.gpu
-  const gpuLoad = Math.round(gpu?.proc ?? 0)
+  const gpuLoad = gpu?.proc != null ? Math.round(gpu.proc) : null
   const vramPct = Math.round(gpu?.mem ?? 0)
 
-  const rpiCpu = Math.round(rpi.cpu?.total ?? 0)
+  const rpiCpu = rpi.cpu?.total != null ? Math.round(rpi.cpu.total) : null
   const rpiMemPct = Math.round(rpi.mem?.percent ?? 0)
   const rpiTemp = getRpiTemp(rpi.sensors)
 
   return (
-    <div className={s.page}>
+    <main className={s.page}>
       <div className={s.inner}>
         <Header online={g.online} />
 
-        <SectionHeader title="SISTEMA" />
+        <div className={s.intro}>
+          <div><p className={s.eyebrow}>TU ESPACIO DE CONTROL</p><h1>Tu servidor, a la vista.</h1></div>
+          <p>Tu infraestructura, de un vistazo.<br />Tus aplicaciones, a un clic.</p>
+        </div>
+        <SectionHeader title="Resumen del sistema" />
         <div className={s.systemGrid}>
           <StatCard
             title="SERVIDOR" tickColor="#3fb37f" online={g.online}
@@ -102,7 +104,7 @@ export default function App() {
             barPct={memPct} barColor={barColor(memPct)}
             temp={srvTemp ? Math.round(srvTemp.value) : null}
             tempColor={srvTemp ? tempColor(srvTemp.value) : undefined}
-            footer={`${g.cpu?.cpucore ?? '—'} núcleos · ${cpuPct}% uso · ${fmtUptime(g.uptime)}`}
+            footer={`${g.cpu?.cpucore ?? '—'} núcleos · ${fmtUptime(g.uptime) || 'Uptime —'}`}
           />
           <StatCard
             title="GPU" tickColor="#4f9dff" online={!!gpu}
@@ -124,14 +126,11 @@ export default function App() {
             tempColor={rpiTemp ? tempColor(rpiTemp.value) : undefined}
             footer={`Raspberry Pi · ${rpi.cpu?.cpucore ?? '—'} núcleos · ${fmtUptime(rpi.uptime)}`}
           />
-          <NetworkCard net={g.net} history={g.history} />
+          <StorageCard disks={g.disks} />
         </div>
 
-        <SectionHeader title="ALMACENAMIENTO · PROCESOS" />
-        <div className={s.twoCol}>
-          <StorageCard disks={g.disks} />
-          <ProcessesCard procs={g.procs} />
-        </div>
+        <SectionHeader title="Tus aplicaciones" />
+        <Services publicSvc={PUBLIC_SVC} privSvc={PRIVATE_SVC} lanIp={LAN_HOST} />
 
         {ZOMBOID_ENABLED && (
           <>
@@ -140,18 +139,10 @@ export default function App() {
           </>
         )}
 
-        <div className={s.split}>
-          <div>
-            <SectionHeader title="CONTENEDORES DOCKER" />
-            <Containers containers={g.containers} />
-          </div>
-          <div>
-            <SectionHeader title="SERVICIOS" />
-            <Services publicSvc={PUBLIC_SVC} privSvc={PRIVATE_SVC} lanIp={LAN_HOST} />
-          </div>
-        </div>
+        <SectionHeader title="Contenedores Docker" />
+        <Containers containers={g.containers} />
       </div>
-    </div>
+    </main>
   )
 
 }

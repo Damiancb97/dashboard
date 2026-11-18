@@ -1,12 +1,12 @@
 .card {
   border: 1px solid var(--border);
-  border-radius: 13px;
+  border-radius: 16px;
   background: var(--card);
-  padding: 16px;
+  padding: 22px;
   display: flex;
   flex-direction: column;
-  gap: 13px;
-  min-height: 206px;
+  gap: 22px;
+  min-height: 280px;
 }
 
 .head { display: flex; align-items: center; justify-content: space-between; }
@@ -30,7 +30,7 @@
   justify-content: space-between;
   gap: 10px;
 }
-.metric { font-family: var(--mono); font-weight: 600; font-size: 33px; line-height: 1; }
+.metric { font-family: var(--mono); font-weight: 500; font-size: 42px; line-height: 1; letter-spacing: -0.06em; }
 .unit { font-size: 15px; color: var(--faint); }
 .metricLabel { font-size: 10px; color: var(--muted); margin-top: 5px; letter-spacing: 0.05em; }
 
@@ -50,4 +50,20 @@
   color: var(--faint);
   letter-spacing: 0.03em;
   margin-top: auto;
+}
+
+.chart { flex: 1; min-width: 0; max-width: 58%; }
+.featured { background: linear-gradient(125deg, #1b3433, var(--card) 75%); border-color: #31514e; }
+.featured .metric { font-size: 64px; }
+.featured .unit { font-size: 22px; margin-left: 5px; }
+.featured .chart { max-width: 65%; }
+.featured .bars { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 28px; }
+.featured .tempRow { flex-direction: column; align-items: flex-end; gap: 8px; }
+.featured .tempValue { font-size: 18px; }
+.barHead { gap: 8px; flex-wrap: wrap; }
+.head { gap: 8px; flex-wrap: wrap; }
+.footer { line-height: 1.5; }
+@media (max-width: 380px) {
+  .featured .bars { grid-template-columns: 1fr; gap: 12px; }
+  .featured .tempRow { flex-direction: row; }
 }

@@ -14,10 +14,7 @@ function ServiceCard({ item, variant }) {
         <div className={s.sub}>{item.sub}</div>
       </div>
       <div className={s.meta}>
-        <span
-          className={s.statusDot}
-          style={{ background: stopped ? '#5a616b' : variant === 'priv' ? '#54c98f' : '#3fb37f' }}
-        />
+        <span className={s.access}>{stopped ? 'Parado' : variant === 'priv' ? 'Privado' : 'Público'}</span>
         <div className={`${s.host} ${stopped ? s.hostStopped : ''}`}>{stopped ? 'PARADO' : item.tag}</div>
       </div>
     </>
@@ -42,8 +39,8 @@ export default function Services({ publicSvc, privSvc, lanIp }) {
             <span className={s.tick} style={{ background: 'var(--green)' }} />
             <span className={s.title}>PÚBLICOS</span>
           </div>
-          <span className={s.note}>expuestos · dominio .com / .es</span>
         </div>
+        <div className={s.note}>Expuestos · dominio .com / .es</div>
         <div className={s.items}>
           {publicSvc.map(item => <ServiceCard key={item.url} item={item} variant="pub" />)}
         </div>
@@ -57,7 +54,7 @@ export default function Services({ publicSvc, privSvc, lanIp }) {
             <span className={s.lanBadge}>LAN</span>
           </div>
         </div>
-        <div className={s.privNote}>solo accesibles desde la red local · {lanIp}</div>
+        <div className={s.note}>Red local o Tailscale · {lanIp}</div>
         <div className={s.items}>
           {privSvc.map(item => <ServiceCard key={item.url} item={item} variant="priv" />)}
         </div>

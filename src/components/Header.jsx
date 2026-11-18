@@ -36,9 +36,8 @@ export default function Header({ online }) {
       <div className={s.right}>
         <div className={`${s.pill} ${online ? s.live : s.down}`}>
           <span className={s.dot} />
-          {online ? 'EN VIVO' : 'SIN CONEXIÓN'}
+          {online ? 'Servidor conectado' : 'Servidor sin conexión'}
         </div>
-        <div className={s.pillMono}>damiancb.com</div>
         <div className={s.clock}>
           <div className={s.time}>{hm}<span className={s.secs}>:{ss}</span></div>
           <div className={s.date}>{date} · A Coruña</div>

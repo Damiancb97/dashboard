@@ -1,8 +1,8 @@
 .card {
   border: 1px solid var(--border);
-  border-radius: 13px;
+  border-radius: 16px;
   background: var(--card);
-  padding: 16px 18px;
+  padding: 22px;
 }
 
 .head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
@@ -11,7 +11,7 @@
 .title { font-size: 11px; font-weight: 600; letter-spacing: 0.11em; color: var(--text-dim); }
 .summary { font-size: 10.5px; color: var(--muted); font-family: var(--mono); }
 
-.list { display: flex; flex-direction: column; gap: 15px; }
+.list { display: flex; flex-direction: column; gap: 24px; }
 .empty { font-size: 12px; color: var(--muted); }
 
 .diskHead {
@@ -26,5 +26,8 @@
 .sub { font-size: 10.5px; color: var(--muted); margin-left: 7px; }
 .diskUsed { font-family: var(--mono); font-size: 11px; color: #9aa3af; white-space: nowrap; }
 
-.track { height: 6px; border-radius: 3px; background: #1c2029; overflow: hidden; }
+.track { height: 8px; border-radius: 4px; background: #252e39; overflow: hidden; }
+.head { gap: 12px; flex-wrap: wrap; }
+.diskHead { flex-wrap: wrap; }
+.label { overflow-wrap: anywhere; }
 .fill { height: 100%; border-radius: 3px; transition: width 0.4s ease; }
